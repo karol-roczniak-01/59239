@@ -81,7 +81,7 @@ function RouteComponent() {
     <Layout>
       {/* Step 1: Account Type */}
       {step === 1 && (
-        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
+        <form className='w-full h-full items-center justify-center flex' onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
           <Card className='h-64'>
             <CardHeader>
               <p>Who are you?</p>

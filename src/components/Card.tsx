@@ -23,7 +23,7 @@ interface CardFooterProps {
 
 const Card = ({ children, className }: CardProps) => {
   return (
-    <div className={twMerge("w-sm h-fit max-h-full flex flex-col border-primary border", className)}>
+    <div className={twMerge("md:w-sm w-full h-fit max-h-full flex flex-col border-primary border", className)}>
       {children}
     </div>
   );

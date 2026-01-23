@@ -121,7 +121,7 @@ function RouteComponent() {
     <Layout>
       {/* Step 1: Property Type */}
       {step === 1 && (
-        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
+        <form className='h-full' onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
           <Card className='h-full'>
             <CardHeader>
               <p>What property are you looking for?</p>
@@ -171,7 +171,7 @@ function RouteComponent() {
 
       {/* Step 2: Location */}
       {step === 2 && (
-        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
+        <form className='h-full' onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
           <Card className='h-full'>
             <CardHeader>
               <p>Where are you looking?</p>
@@ -226,7 +226,7 @@ function RouteComponent() {
 
       {/* Step 3: Conditions */}
       {step === 3 && (
-        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
+        <form className='h-full' onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
           <Card className='h-full'>
             <CardHeader>
               <p>What condition do you prefer?</p>
@@ -283,7 +283,7 @@ function RouteComponent() {
 
       {/* Step 4: Must Have */}
       {step === 4 && (
-        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
+        <form className='h-full' onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
           <Card className='h-full'>
             <CardHeader>
               <p>What are your must-have requirements?</p>
@@ -350,7 +350,7 @@ function RouteComponent() {
 
       {/* Step 5: Nice to Have */}
       {step === 5 && (
-        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>  {/* ← Change this */}
+        <form className='h-full' onSubmit={(e) => { e.preventDefault(); handleNext(); }}>  {/* ← Change this */}
           <Card className='h-full'>
             <CardHeader>
               <p>Any additional preferences? (Optional)</p>
@@ -417,7 +417,7 @@ function RouteComponent() {
 
       {/* Step 6: Payment Type */}
       {step === 6 && (
-        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
+        <form className='h-full' onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
           <Card className='h-full'>
             <CardHeader>
               <p>What payment type do you prefer?</p>
@@ -475,6 +475,7 @@ function RouteComponent() {
       {/* Step 7: Price Range */}
       {step === 7 && (
         <form 
+          className='h-full'
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();

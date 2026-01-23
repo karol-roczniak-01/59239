@@ -43,6 +43,7 @@ function RouteComponent() {
           e.stopPropagation()
           form.handleSubmit()
         }}
+        className='w-full h-full items-center justify-center flex'
       >
         <Card className='h-64'>
           <CardHeader>

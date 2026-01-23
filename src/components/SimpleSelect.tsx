@@ -118,7 +118,7 @@ const SimpleSelect: React.FC<SimpleSelectProps> = ({
               key={item.value}
               onClick={() => handleSelect(item)}
               className={`${
-                selected === index ? 'ring-2 ring-primary' : ''
+                selected === index ? '' : ''
               }`}
               onMouseEnter={() => setSelected(index)}
             >
