@@ -4,48 +4,33 @@ const Paths = () => {
   const matches = useMatches();
   const location = useLocation();
 
-  // Get unique paths only
-  const uniquePaths = matches
-    .map(m => ({
-      pathname: m.pathname,
-      fullPath: m.fullPath, // This is the route definition path
-      id: m.id
-    }))
-    .filter((item, index, self) => 
-      self.findIndex(i => i.pathname === item.pathname) === index
-    );
+  // Filter out duplicate root matches
+  const uniqueMatches = matches.filter((match, index, self) => 
+    self.findIndex(m => m.pathname === match.pathname) === index
+  );
 
   return (
     <div className="absolute z-20 top-2 left-2 flex-col gap-0.5 hidden md:flex">
-      {uniquePaths.map(({ pathname, fullPath, id }) => {
-        const segments = pathname.split("/").filter(Boolean);
+      {uniqueMatches.map((match) => {
+        const segments = match.pathname.split("/").filter(Boolean);
         const depth = segments.length;
         const label = depth === 0 ? "Home" : segments[segments.length - 1];
         const prefix = depth === 0 ? "" : "│  ".repeat(depth - 1) + "├─ ";
-        const isHome = pathname === "/";
-        const isCurrentLocation = location.pathname === pathname;
-        const isDisabled = isHome && isCurrentLocation;
-
-        if (isDisabled) {
-          return (
-            <span
-              key={id}
-              className="text-sm capitalize cursor-not-allowed opacity-50"
-            >
-              <span>{prefix}</span>
-              <span>{label}</span>
-            </span>
-          );
-        }
+        const isActive = location.pathname === match.pathname;
 
         return (
           <Link
-            key={id}
-            to={fullPath}
-            className="text-sm capitalize cursor-pointer hover:underline"
+            key={match.id}
+            to={match.pathname as any}
+            className="text-sm capitalize hover:underline"
+            disabled={isActive}
+            style={{ 
+              opacity: isActive ? 0.5 : 1,
+              cursor: isActive ? "not-allowed" : "pointer",
+              pointerEvents: isActive ? "none" : "auto"
+            }}
           >
-            <span>{prefix}</span>
-            <span>{label}</span>
+            {prefix}{label}
           </Link>
         );
       })}

@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import Layout from '@/components/Layout'
 import Loader from '@/components/Loader'
-import type { AuthContext, User } from '../../utils/types'
+import type { AuthContext, User } from '../utils/types'
 
 const Auth = createContext<AuthContext | null>(null)
 

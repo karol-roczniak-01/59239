@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import type { User } from "../../utils/types";
+import type { User } from "../utils/types";
 
 // ===== API FUNCTIONS ======
 

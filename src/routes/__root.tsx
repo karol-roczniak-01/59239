@@ -5,7 +5,7 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
 import type { QueryClient } from '@tanstack/react-query'
-import type { AuthContext } from '../../utils/types'
+import type { AuthContext } from '../utils/types'
 import Paths from '@/components/Paths'
 
 interface MyRouterContext {

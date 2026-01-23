@@ -2,9 +2,8 @@ import Loader from '@/components/Loader'
 import Menu from '@/components/Menu'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
-import { User, Settings, LogOut, Users, Book, Pen, ShoppingCart, UserPlus } from 'lucide-react'
+import { User, Settings, LogOut, Users, UserPlus, TrendingUp, TrendingDown } from 'lucide-react'
 import Layout from '@/components/Layout'
-import { Card, CardContent } from '@/components/Card'
 
 export const Route = createFileRoute('/')({
   pendingComponent: () => <Loader />,
@@ -23,7 +22,8 @@ function RouteComponent() {
 
   const authorizedOptions = [
     { label: 'Me', path: '/me', icon: Settings },
-    { label: 'Demand', path: '/demand', icon: ShoppingCart },
+    { label: 'Demand', path: '/demand', icon: TrendingDown },
+    { label: 'Supply', path: '/supply', icon: TrendingUp },
     { label: 'Users', path: '/users', icon: Users },
     { label: 'Logout', icon: LogOut, onSelect: handleLogout }
   ];
@@ -40,38 +40,30 @@ function RouteComponent() {
   if (auth.user) {
     return (
       <Layout>
-        <Card>
-          <CardContent>
-            <Menu 
-              options={authorizedOptions}
-              onSelect={(option, index) => {
-                setLastSelected(`${option.label} (${index})`);
-                if (option.path) {
-                  navigate({ to: option.path })
-                }
-              }}
-            />
-          </CardContent>
-        </Card>
+        <Menu 
+          options={authorizedOptions}
+          onSelect={(option, index) => {
+          setLastSelected(`${option.label} (${index})`);
+            if (option.path) {
+              navigate({ to: option.path })
+            }
+          }}
+        />
       </Layout>
     )
   }
 
   return (
     <Layout>
-      <Card className='md:w-xs'>
-        <CardContent>
-          <Menu 
-            options={unauthorizedOptions}
-            onSelect={(option, index) => {
-              setLastSelected(`${option.label} (${index})`);
-              if (option.path) {
-                navigate({ to: option.path })
-              }
-            }}
-          />
-        </CardContent>
-      </Card>
+      <Menu 
+        options={unauthorizedOptions}
+        onSelect={(option, index) => {
+        setLastSelected(`${option.label} (${index})`);
+          if (option.path) {
+            navigate({ to: option.path })
+          }
+        }}
+      />
     </Layout>
   )
 }

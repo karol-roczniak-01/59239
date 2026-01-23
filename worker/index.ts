@@ -2,6 +2,7 @@ import { D1Database } from '@cloudflare/workers-types';
 import { Hono } from 'hono';
 import auth from './routes/auth';
 import users from './routes/users';
+import propertiesDemand from './routes/propertiesDemand';
 
 export type Env = {
   DB: D1Database;
@@ -20,6 +21,7 @@ export type Variables = {
 const app = new Hono<{ Bindings: Env; Variables: Variables }>
 
 app.route('/', auth);
-app.route('/', users)
+app.route('/', users);
+app.route('/', propertiesDemand)
 
 export default app;

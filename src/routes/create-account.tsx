@@ -1,6 +1,7 @@
 import Loader from '@/components/Loader'
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { useAuth } from './-auth'
+import { useForm } from '@tanstack/react-form'
 import { Input } from '@/components/Input'
 import { Button } from '@/components/Button'
 import { ChevronRight, ChevronLeft, Loader as LoaderIcon, AlertTriangle } from 'lucide-react'
@@ -22,63 +23,24 @@ function RouteComponent() {
   const { signup } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    type: '',
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+
+  const form = useForm({
+    defaultValues: {
+      type: '',
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: ''
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        await signup(value.name, value.email, value.password, value.type);
+        navigate({ to: '/' });
+      } catch (err) {
+        console.error('Signup failed:', err);
+      }
+    },
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const validateName = (value: string) => {
-    if (!value) return 'Name is required';
-    if (value.length < 3) return 'Name must be at least 3 characters';
-    if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
-      return 'Name can only contain letters, numbers, underscores, and hyphens';
-    }
-    return '';
-  };
-
-  const validateEmail = (value: string) => {
-    if (!value) return 'Email is required';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      return 'Invalid email format';
-    }
-    return '';
-  };
-
-  const validatePassword = (value: string) => {
-    if (!value) return 'Password is required';
-    if (value.length < 8) return 'Password must be at least 8 characters';
-    if (!/[A-Z]/.test(value)) return 'Password must contain at least one uppercase letter';
-    if (!/[a-z]/.test(value)) return 'Password must contain at least one lowercase letter';
-    if (!/[0-9]/.test(value)) return 'Password must contain at least one number';
-    return '';
-  };
-
-  const validateConfirmPassword = (value: string) => {
-    if (!value) return 'Please confirm your password';
-    if (value !== formData.password) return 'Passwords do not match';
-    return '';
-  };
-
-  const canProceedStep1 = () => {
-    return formData.type !== '';
-  };
-
-  const canProceedStep2 = () => {
-    const nameError = validateName(formData.name);
-    const emailError = validateEmail(formData.email);
-    return !nameError && !emailError;
-  };
-
-  const canProceedStep3 = () => {
-    const passwordError = validatePassword(formData.password);
-    const confirmPasswordError = validateConfirmPassword(formData.confirmPassword);
-    return !passwordError && !confirmPasswordError;
-  };
 
   const handleNext = () => {
     setStep(prev => prev + 1);
@@ -89,18 +51,18 @@ function RouteComponent() {
   };
 
   const handleNextStep2 = async () => {
-    setIsSubmitting(true);
+    const nameValue = form.getFieldValue('name');
+    
     try {
       // Check username availability before proceeding
-      const response = await fetch(`/api/users/check-username/${formData.name}`);
+      const response = await fetch(`/api/users/check-username/${nameValue}`);
       const data = await response.json();
       
       if (!data.available) {
-        setErrors(prev => ({ 
-          ...prev, 
-          name: data.reason || 'Username already taken' 
+        form.setFieldMeta('name', (prev) => ({
+          ...prev,
+          errors: [data.reason || 'Username already taken']
         }));
-        setIsSubmitting(false);
         return;
       }
       
@@ -108,24 +70,10 @@ function RouteComponent() {
       setStep(prev => prev + 1);
     } catch (err) {
       console.error('Failed to check username:', err);
-      setErrors(prev => ({ 
-        ...prev, 
-        name: 'Failed to verify username availability' 
+      form.setFieldMeta('name', (prev) => ({
+        ...prev,
+        errors: ['Failed to verify username availability']
       }));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    try {
-      await signup(formData.name, formData.email, formData.password, formData.type);
-      navigate({ to: '/' });
-    } catch (err) {
-      console.error('Signup failed:', err);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -139,41 +87,49 @@ function RouteComponent() {
               <p>Who are you?</p>
             </CardHeader>
             <CardContent className='flex flex-col gap-1'>
-              <label className='flex gap-2 items-center cursor-pointer'>
-                <input
-                  type="radio"
-                  name="type"
-                  value="human"
-                  checked={formData.type === 'human'}
-                  onChange={(e) => {
-                    setFormData(prev => ({ ...prev, type: e.target.value }));
-                  }}
-                  className="h-4 w-4 appearance-none border border-orange-400 rounded-full checked:bg-primary hover:checked:bg-primary checked:border-primary hover:border-primary outline-none"
-                />
-                <span>Human</span>
-              </label>
-              <label className='flex gap-2 items-center cursor-pointer'>
-                <input
-                  type="radio"
-                  name="type"
-                  value="organization"
-                  checked={formData.type === 'organization'}
-                  onChange={(e) => {
-                    setFormData(prev => ({ ...prev, type: e.target.value }));
-                  }}
-                  className="h-4 w-4 appearance-none border border-orange-400 rounded-full checked:bg-primary hover:checked:bg-primary checked:border-primary hover:border-primary outline-none"
-                />
-                <span>Organization</span>
-              </label>
+              <form.Field name="type">
+                {(field) => (
+                  <>
+                    <label className='flex gap-2 items-center cursor-pointer'>
+                      <input
+                        type="radio"
+                        name={field.name}
+                        value="human"
+                        checked={field.state.value === 'human'}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        className="h-4 w-4 appearance-none border border-orange-400 rounded-full checked:bg-primary hover:checked:bg-primary checked:border-primary hover:border-primary outline-none"
+                      />
+                      <span>Human</span>
+                    </label>
+                    <label className='flex gap-2 items-center cursor-pointer'>
+                      <input
+                        type="radio"
+                        name={field.name}
+                        value="organization"
+                        checked={field.state.value === 'organization'}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        className="h-4 w-4 appearance-none border border-orange-400 rounded-full checked:bg-primary hover:checked:bg-primary checked:border-primary hover:border-primary outline-none"
+                      />
+                      <span>Organization</span>
+                    </label>
+                  </>
+                )}
+              </form.Field>
             </CardContent>
             <CardFooter>
-              <Button 
-                type="submit"
-                disabled={!canProceedStep1()}
-                className='w-full'
+              <form.Subscribe
+                selector={(state) => state.values.type}
               >
-                <ChevronRight className='shrink-0' strokeWidth={1.5} size={18}/>
-              </Button>
+                {(typeValue) => (
+                  <Button 
+                    type="submit"
+                    disabled={!typeValue}
+                    className='w-full'
+                  >
+                    <ChevronRight className='shrink-0' strokeWidth={1.5} size={18}/>
+                  </Button>
+                )}
+              </form.Subscribe>
             </CardFooter>
           </Card>
         </form>
@@ -181,53 +137,95 @@ function RouteComponent() {
 
       {/* Step 2: Name and Email */}
       {step === 2 && (
-        <form onSubmit={(e) => { e.preventDefault(); handleNextStep2(); }}>
+        <form onSubmit={(e) => { e.preventDefault(); }}>
           <Card className='h-64'>
             <CardHeader>
               <p>Enter unique name, and email we&apos;ll use to contact you</p>
             </CardHeader>
-            <CardContent className='flex flex-col'>
-              <Input
-                id="name"
+            <CardContent className='flex flex-col relative'>
+              <form.Field
                 name="name"
-                type="text"
-                value={formData.name}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setFormData(prev => ({ ...prev, name: value }));
-                  const error = validateName(value);
-                  setErrors(prev => ({ ...prev, name: error }));
+                validators={{
+                  onChange: ({ value }) => {
+                    if (!value) return 'Name is required';
+                    if (value.length < 3) return 'Name must be at least 3 characters';
+                    if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
+                      return 'Name can only contain letters, numbers, underscores, and hyphens';
+                    }
+                    return undefined;
+                  },
                 }}
-                autoFocus
-                placeholder="name"
-                className='border-b-0'
-              />
-              <Input
-                id="email"
+              >
+                {(field) => (
+                  <div>
+                    <Input
+                      id={field.name}
+                      name={field.name}
+                      type="text"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      autoFocus
+                      placeholder="name"
+                      className='border-b-0'
+                    />
+                  </div>
+                )}
+              </form.Field>
+
+              <form.Field
                 name="email"
-                type="email"
-                autoComplete="email"
-                value={formData.email}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setFormData(prev => ({ ...prev, email: value }));
-                  const error = validateEmail(value);
-                  setErrors(prev => ({ ...prev, email: error }));
+                validators={{
+                  onChange: ({ value }) => {
+                    if (!value) return 'Email is required';
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                      return 'Invalid email format';
+                    }
+                    return undefined;
+                  },
                 }}
-                placeholder="email@example.com"
-              />
-              {errors.name && (
-                <div className='flex text-sm items-center gap-2 opacity-70 mt-2'>
-                  <AlertTriangle className='shrink-0' size={15}/>
-                  <p>{errors.name}</p>
-                </div>
-              )}
-              {errors.email && (
-                <div className='flex text-sm items-center gap-2 opacity-70 mt-1'>
-                  <AlertTriangle className='shrink-0' size={15}/>
-                  <p>{errors.email}</p>
-                </div>
-              )}
+              >
+                {(field) => (
+                  <div>
+                    <Input
+                      id={field.name}
+                      name={field.name}
+                      type="email"
+                      autoComplete="email"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      placeholder="email@example.com"
+                    />
+                  </div>
+                )}
+              </form.Field>
+
+              <form.Field name="name" mode="array">
+                {(field) => (
+                  <>
+                    {field.state.meta.errors.length > 0 && (
+                      <div className='absolute flex top-18 text-sm items-center gap-2 opacity-70 mt-2'>
+                        <AlertTriangle className='shrink-0' size={15}/>
+                        <p>{field.state.meta.errors[0]}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+              </form.Field>
+
+              <form.Field name="email" mode="array">
+                {(field) => (
+                  <>
+                    {field.state.meta.errors.length > 0 && (
+                      <div className='absolute flex top-24 text-sm items-center gap-2 opacity-70 mt-1'>
+                        <AlertTriangle className='shrink-0' size={15}/>
+                        <p>{field.state.meta.errors[0]}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+              </form.Field>
             </CardContent>
             <CardFooter className='flex gap-2'>
               <Button
@@ -237,16 +235,27 @@ function RouteComponent() {
               >
                 <ChevronLeft className='shrink-0' strokeWidth={1.5} size={18}/>
               </Button>
-              <Button
-                type="submit"
-                disabled={!canProceedStep2() || isSubmitting}
-                className='w-full'
+              <form.Subscribe
+                selector={(state) => ({
+                  nameError: state.fieldMeta.name?.errors?.length ?? 0,
+                  emailError: state.fieldMeta.email?.errors?.length ?? 0,
+                  isSubmitting: state.isSubmitting,
+                })}
               >
-                {isSubmitting 
-                  ? <LoaderIcon className='shrink-0 animate-spin' strokeWidth={1.5} size={18}/>
-                  : <ChevronRight className='shrink-0' strokeWidth={1.5} size={18}/>
-                }
-              </Button>
+                {({ nameError, emailError, isSubmitting }) => (
+                  <Button
+                    type="button"
+                    onClick={handleNextStep2}
+                    disabled={nameError > 0 || emailError > 0 || isSubmitting}
+                    className='w-full'
+                  >
+                    {isSubmitting 
+                      ? <LoaderIcon className='shrink-0 animate-spin' strokeWidth={1.5} size={18}/>
+                      : <ChevronRight className='shrink-0' strokeWidth={1.5} size={18}/>
+                    }
+                  </Button>
+                )}
+              </form.Subscribe>
             </CardFooter>
           </Card>
         </form>
@@ -254,58 +263,102 @@ function RouteComponent() {
 
       {/* Step 3: Passwords */}
       {step === 3 && (
-        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+        >
           <Card className='h-64'>
             <CardHeader>
               <p>Enter strong password and confirm. You&apos;ll use it everytime you login</p>
             </CardHeader>
-            <CardContent className='flex flex-col'>
-              <Input
-                id="password"
+            <CardContent className='flex flex-col relative'>
+              <form.Field
                 name="password"
-                type="password"
-                autoComplete="new-password"
-                value={formData.password}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setFormData(prev => ({ ...prev, password: value }));
-                  const error = validatePassword(value);
-                  setErrors(prev => ({ ...prev, password: error }));
-                  if (formData.confirmPassword) {
-                    const confirmError = value !== formData.confirmPassword ? 'Passwords do not match' : '';
-                    setErrors(prev => ({ ...prev, confirmPassword: confirmError }));
-                  }
+                validators={{
+                  onChange: ({ value }) => {
+                    if (!value) return 'Password is required';
+                    if (value.length < 8) return 'Password must be at least 8 characters';
+                    if (!/[A-Z]/.test(value)) return 'Password must contain at least one uppercase letter';
+                    if (!/[a-z]/.test(value)) return 'Password must contain at least one lowercase letter';
+                    if (!/[0-9]/.test(value)) return 'Password must contain at least one number';
+                    return undefined;
+                  },
                 }}
-                autoFocus
-                placeholder="••••••••"
-                className='border-b-0'
-              />
-              <Input
-                id="confirmPassword"
+              >
+                {(field) => (
+                  <div>
+                    <Input
+                      id={field.name}
+                      name={field.name}
+                      type="password"
+                      autoComplete="new-password"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      autoFocus
+                      placeholder="••••••••"
+                      className='border-b-0'
+                    />
+                  </div>
+                )}
+              </form.Field>
+
+              <form.Field
                 name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                value={formData.confirmPassword}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setFormData(prev => ({ ...prev, confirmPassword: value }));
-                  const error = validateConfirmPassword(value);
-                  setErrors(prev => ({ ...prev, confirmPassword: error }));
+                validators={{
+                  onChangeListenTo: ['password'],
+                  onChange: ({ value, fieldApi }) => {
+                    if (!value) return 'Please confirm your password';
+                    const password = fieldApi.form.getFieldValue('password');
+                    if (value !== password) return 'Passwords do not match';
+                    return undefined;
+                  },
                 }}
-                placeholder="••••••••"
-              />
-              {errors.password && (
-                <div className='flex text-sm items-center gap-2 opacity-70 mt-2'>
-                  <AlertTriangle size={15}/>
-                  <p>{errors.password}</p>
-                </div>            
-              )}
-              {errors.confirmPassword && (
-                <div className='flex text-sm items-center gap-2 opacity-70 mt-2'>
-                  <AlertTriangle size={15}/>
-                  <p>{errors.confirmPassword}</p>
-                </div>            
-              )}
+              >
+                {(field) => (
+                  <div>
+                    <Input
+                      id={field.name}
+                      name={field.name}
+                      type="password"
+                      autoComplete="new-password"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      placeholder="••••••••"
+                    />
+                  </div>
+                )}
+              </form.Field>
+
+              <form.Field name="password" mode="array">
+                {(field) => (
+                  <>
+                    {field.state.meta.errors.length > 0 && (
+                      <div className='absolute flex top-18 text-sm items-center gap-2 opacity-70 mt-2'>
+                        <AlertTriangle size={15}/>
+                        <p>{field.state.meta.errors[0]}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+              </form.Field>
+
+              <form.Field name="confirmPassword" mode="array">
+                {(field) => (
+                  <>
+                    {field.state.meta.errors.length > 0 && (
+                      <div className='absolute flex top-24 text-sm items-center gap-2 opacity-70 mt-2'>
+                        <AlertTriangle size={15}/>
+                        <p>{field.state.meta.errors[0]}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+              </form.Field>
             </CardContent>
             <CardFooter className='flex gap-2'>
               <Button
@@ -315,16 +368,25 @@ function RouteComponent() {
               >
                 <ChevronLeft className='shrink-0' strokeWidth={1.5} size={18}/>
               </Button>
-              <Button
-                type="submit"
-                disabled={!canProceedStep3() || isSubmitting}
-                className='w-full'
+              <form.Subscribe
+                selector={(state) => ({
+                  canSubmit: state.canSubmit,
+                  isSubmitting: state.isSubmitting,
+                })}
               >
-                {isSubmitting 
-                  ? <LoaderIcon className='shrink-0 animate-spin' strokeWidth={1.5} size={18}/>
-                  : <ChevronRight className='shrink-0' strokeWidth={1.5} size={18}/>
-                }
-              </Button>
+                {({ canSubmit, isSubmitting }) => (
+                  <Button
+                    type="submit"
+                    disabled={!canSubmit || isSubmitting}
+                    className='w-full'
+                  >
+                    {isSubmitting 
+                      ? <LoaderIcon className='shrink-0 animate-spin' strokeWidth={1.5} size={18}/>
+                      : <ChevronRight className='shrink-0' strokeWidth={1.5} size={18}/>
+                    }
+                  </Button>
+                )}
+              </form.Subscribe>
             </CardFooter>
           </Card>
         </form>
