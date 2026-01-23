@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TestRouteImport } from './routes/test'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CreateAccountRouteImport } from './routes/create-account'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -20,11 +19,6 @@ import { Route as AuthenticatedDemandIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedUserNameRouteImport } from './routes/_authenticated/user.$name'
 import { Route as AuthenticatedDemandPropertiesRouteImport } from './routes/_authenticated/demand/properties'
 
-const TestRoute = TestRouteImport.update({
-  id: '/test',
-  path: '/test',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -76,7 +70,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/create-account': typeof CreateAccountRoute
   '/login': typeof LoginRoute
-  '/test': typeof TestRoute
   '/me': typeof AuthenticatedMeRoute
   '/users': typeof AuthenticatedUsersRoute
   '/demand/properties': typeof AuthenticatedDemandPropertiesRoute
@@ -87,7 +80,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/create-account': typeof CreateAccountRoute
   '/login': typeof LoginRoute
-  '/test': typeof TestRoute
   '/me': typeof AuthenticatedMeRoute
   '/users': typeof AuthenticatedUsersRoute
   '/demand/properties': typeof AuthenticatedDemandPropertiesRoute
@@ -100,7 +92,6 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/create-account': typeof CreateAccountRoute
   '/login': typeof LoginRoute
-  '/test': typeof TestRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/demand/properties': typeof AuthenticatedDemandPropertiesRoute
@@ -113,7 +104,6 @@ export interface FileRouteTypes {
     | '/'
     | '/create-account'
     | '/login'
-    | '/test'
     | '/me'
     | '/users'
     | '/demand/properties'
@@ -124,7 +114,6 @@ export interface FileRouteTypes {
     | '/'
     | '/create-account'
     | '/login'
-    | '/test'
     | '/me'
     | '/users'
     | '/demand/properties'
@@ -136,7 +125,6 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/create-account'
     | '/login'
-    | '/test'
     | '/_authenticated/me'
     | '/_authenticated/users'
     | '/_authenticated/demand/properties'
@@ -149,18 +137,10 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   CreateAccountRoute: typeof CreateAccountRoute
   LoginRoute: typeof LoginRoute
-  TestRoute: typeof TestRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/test': {
-      id: '/test'
-      path: '/test'
-      fullPath: '/test'
-      preLoaderRoute: typeof TestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -252,7 +232,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   CreateAccountRoute: CreateAccountRoute,
   LoginRoute: LoginRoute,
-  TestRoute: TestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
