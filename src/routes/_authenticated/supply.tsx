@@ -1,4 +1,4 @@
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/Card'
+import { Card, CardContent, CardHeader } from '@/components/Card'
 import { Textarea } from '@/components/Textarea'
 import { Button } from '@/components/Button'
 import Layout from '@/components/Layout'

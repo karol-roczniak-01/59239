@@ -1,4 +1,4 @@
-import { useMatches, Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 
 const Path = () => {
   const location = useLocation();

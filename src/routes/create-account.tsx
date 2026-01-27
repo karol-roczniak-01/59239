@@ -8,7 +8,6 @@ import { Loader as LoaderIcon, AlertCircleIcon, AlertCircle } from 'lucide-react
 import { useState } from 'react'
 import Layout from '@/components/Layout'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/Card'
-import useMobile from '@/hooks/useMobile'
 
 export const Route = createFileRoute('/create-account')({
   pendingComponent: () => <Loader />,
