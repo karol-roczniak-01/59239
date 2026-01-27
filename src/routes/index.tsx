@@ -2,7 +2,7 @@ import Loader from '@/components/Loader'
 import Menu from '@/components/Menu'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
-import { User, Settings, LogOut, Users, UserPlus, TrendingUp, TrendingDown } from 'lucide-react'
+import { User, Settings, LogOut, Users, UserPlus, TrendingUp, TrendingDown, Factory, BadgeDollarSign } from 'lucide-react'
 import Layout from '@/components/Layout'
 
 export const Route = createFileRoute('/')({
@@ -15,6 +15,8 @@ function RouteComponent() {
   const navigate = useNavigate();
   const [_lastSelected, setLastSelected] = useState<string>('');
 
+  console.log('auth', auth)
+
   const handleLogout = () => {
     auth.logout();
     navigate({ to: '/' })
@@ -22,8 +24,8 @@ function RouteComponent() {
 
   const authorizedOptions = [
     { label: 'Me', path: '/me', icon: Settings },
-    { label: 'Demand', path: '/demand', icon: TrendingDown },
-    { label: 'Supply', path: '/supply', icon: TrendingUp },
+    { label: 'Demand', path: '/demand', icon: BadgeDollarSign },
+    { label: 'Supply', path: '/supply', icon: Factory },
     { label: 'Users', path: '/users', icon: Users },
     { label: 'Logout', icon: LogOut, onSelect: handleLogout }
   ];

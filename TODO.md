@@ -1,0 +1,6 @@
+- use uuid's instead of numbers
+- add endingAt for demands
+- limit api requests per day
+- limit number of active demands
+- take a look on ai matching. Why it works bad
+- finish me page

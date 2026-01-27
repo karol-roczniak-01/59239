@@ -1,30 +1,33 @@
 import { useMemo, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { type LucideIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader } from './Card';
 import { Input } from './Input';
 import { Button } from './Button';
 import useMobile from '@/hooks/useMobile';
 
-interface MenuItem {
+interface SelectOption {
+  value: string;
   label: string;
-  path?: string;
-  icon?: LucideIcon;
-  onSelect?: () => void;
 }
 
-interface MenuProps {
-  options: MenuItem[];
-  onSelect?: (option: MenuItem, index: number) => void;
+interface SelectProps {
+  options: SelectOption[];
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
   searchable?: boolean;
   searchPlaceholder?: string;
+  label?: string;
 }
 
-const Menu: React.FC<MenuProps> = ({ 
+const Select: React.FC<SelectProps> = ({ 
   options,
-  onSelect,
-  searchable,
-  searchPlaceholder
+  value,
+  onChange,
+  placeholder,
+  searchable = false,
+  searchPlaceholder = 'Search...',
+  label
 }) => {
   const isMobile = useMobile();
   const [selected, setSelected] = useState(0);
@@ -36,7 +39,8 @@ const Menu: React.FC<MenuProps> = ({
     }
     const query = searchQuery.toLowerCase();
     return options.filter(option => 
-      option.label.toLowerCase().includes(query)
+      option.label.toLowerCase().includes(query) ||
+      option.value.toLowerCase().includes(query)
     );
   }, [options, searchQuery, searchable]);
 
@@ -46,10 +50,8 @@ const Menu: React.FC<MenuProps> = ({
   }, [filteredOptions]);
 
   const handleSelect = (index: number) => {
-    const current = filteredOptions[index];
-    const originalIndex = options.indexOf(current);
-    current.onSelect?.();
-    onSelect?.(current, originalIndex);
+    const selectedOption = filteredOptions[index];
+    onChange(selectedOption.value);
   };
 
   useHotkeys('down', (e) => {
@@ -70,43 +72,48 @@ const Menu: React.FC<MenuProps> = ({
   }, { enableOnFormTags: true });
 
   return (
-    <Card>
-      {searchable && (
-        <CardHeader>
-          <Input 
-            autoFocus={!isMobile}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={searchPlaceholder}
-          />
-        </CardHeader>
+    <div className="space-y-2">
+      {label && (
+        <label className="text-sm font-medium">{label}</label>
       )}
-      <CardContent className='space-y-2 text-center'>
-        {filteredOptions.length === 0 ? (
-          <></>
-        ) : (
-          filteredOptions.map((option, index) => {
-          const Icon = option.icon;
-            return (
+      <Card>
+        {searchable && (
+          <CardHeader>
+            <Input 
+              autoFocus={!isMobile}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={searchPlaceholder}
+              pla
+            />
+          </CardHeader>
+        )}
+        <CardContent className='space-y-2 text-center'>
+          {filteredOptions.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No options found</p>
+          ) : (
+            filteredOptions.map((option, index) => (
               <Button
-                key={index}
+                key={option.value}
+                type="button"
                 className={`w-full ${
                   selected === index
                     ? 'bg-primary text-background'
+                    : value === option.value
+                    ? 'border-2 border-primary'
                     : ''
                 }`}
                 onMouseEnter={() => setSelected(index)}
                 onClick={() => handleSelect(index)}
               >
-                {Icon && <Icon size={16}/>}
                 {option.label}
               </Button>
-            );
-          })
-        )}
-      </CardContent>
-    </Card>
+            ))
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
-export default Menu;
+export default Select;

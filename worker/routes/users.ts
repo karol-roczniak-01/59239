@@ -41,7 +41,7 @@ users.get('/api/me/user/:userName', async (c) => {
 
     // Query user by name
     const user = await c.env.DB
-      .prepare('SELECT id, name, email, type, verified FROM Users WHERE name = ?')
+      .prepare('SELECT id, name, email, type, verified FROM users WHERE name = ?')
       .bind(validatedUserName)
       .first<DbUser>();
 
@@ -77,7 +77,7 @@ users.get('/api/users/humans/search', async (c) => {
     }
     
     const result = await c.env.DB
-      .prepare('SELECT id, name, email, type, verified FROM Users WHERE name LIKE ? AND type = ? ORDER BY name LIMIT 10')
+      .prepare('SELECT id, name, email, type, verified FROM users WHERE name LIKE ? AND type = ? ORDER BY name LIMIT 10')
       .bind(`${validatedName}%`, 'human')
       .all();
 
@@ -111,7 +111,7 @@ users.get('/api/users/organizations/search', async (c) => {
     }
     
     const result = await c.env.DB
-      .prepare('SELECT id, name, email, type, verified FROM Users WHERE name LIKE ? AND type = ? ORDER BY name LIMIT 10')
+      .prepare('SELECT id, name, email, type, verified FROM users WHERE name LIKE ? AND type = ? ORDER BY name LIMIT 10')
       .bind(`${validatedName}%`, 'organization')
       .all();
 
@@ -141,7 +141,7 @@ users.get('/api/users/:userId', async (c) => {
 
     // Query user by ID
     const user = await c.env.DB
-      .prepare('SELECT id, name, email, type, verified FROM Users WHERE id = ?')
+      .prepare('SELECT id, name, email, type, verified FROM users WHERE id = ?')
       .bind(validatedUserId)
       .first<DbUser>();
 

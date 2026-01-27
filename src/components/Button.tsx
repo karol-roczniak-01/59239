@@ -1,18 +1,12 @@
 import * as React from "react"
 import { twMerge } from "tailwind-merge"
-import { useHotkeys } from "react-hotkeys-hook"
 
 interface ButtonProps extends React.ComponentProps<"button"> {
   className?: string
-  hotkey?: string
 }
 
-function Button({ className = "", hotkey, onClick, disabled, ...props }: ButtonProps) {
+function Button({ className = "", onClick, disabled, ...props }: ButtonProps) {
   const ref = React.useRef<HTMLButtonElement>(null)
-  
-  useHotkeys(hotkey || "", () => ref.current?.click(), {
-    enabled: !!hotkey && !disabled
-  })
 
   return (
     <button

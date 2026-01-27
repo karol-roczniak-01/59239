@@ -17,7 +17,7 @@ export const fetchHumansByName = async (name: string): Promise<User[]> => {
   return data.users;
 };
 
-export const fetchOragnizationsByName = async (name: string): Promise<User[]> => {
+export const fetchOrganizationsByName = async (name: string): Promise<User[]> => {
   const res = await fetch(`/api/users/organizations/search?name=${encodeURIComponent(name)}`);
   if (!res.ok) throw new Error('Failed to search humans');
   const data = await res.json();
@@ -46,7 +46,7 @@ export const humansByNameQueryOptions = (name: string) =>
 export const organizationsByNameQueryOptions = (name: string) =>
   queryOptions({
     queryKey: ['users', 'organizations', 'search', name],
-    queryFn: () => fetchOragnizationsByName(name),
+    queryFn: () => fetchOrganizationsByName(name),
     staleTime: 30 * 1000, // 30 seconds (search results change frequently)
     gcTime: 5 * 60 * 1000,
     enabled: !!name && name.length > 1,

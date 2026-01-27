@@ -1,0 +1,27 @@
+import type React from "react";
+
+interface DialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  children?: React.ReactNode;
+}
+
+const Dialog: React.FC<DialogProps> = ({ isOpen, onClose, children }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 bg-background/90 flex items-center justify-center z-50"
+      onClick={onClose}
+    >
+      <div 
+        className="max-h-full" 
+        onClick={(e) => e.stopPropagation()}
+      >
+        {children}
+      </div>
+    </div>
+  );
+};
+
+export default Dialog;

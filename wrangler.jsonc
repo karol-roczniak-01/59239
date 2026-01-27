@@ -20,6 +20,15 @@
 			"binding": "DB",
 			"database_name": "5-92-39",
 			"database_id": "fa9ab3f8-8ac1-489f-9000-40b12c07c3a9",
+		}
+	],
+	"ai": {
+		"binding": "AI"
+	},
+	"vectorize": [
+		{
+			"binding": "VECTORIZE",
+			"index_name": "demands-index",
 			"remote": true
 		}
 	]

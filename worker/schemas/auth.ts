@@ -1,4 +1,3 @@
-// schemas/auth.ts
 import { z } from 'zod';
 
 // ============================================================================
@@ -27,9 +26,8 @@ export const nameSchema = z.string()
   );
 
 // Email schema
-export const emailSchema = z.string()
+export const emailSchema = z.email()
   .min(1, 'Email is required')
-  .email('Invalid email format')
   .trim()
   .transform((val) => val.toLowerCase());
 

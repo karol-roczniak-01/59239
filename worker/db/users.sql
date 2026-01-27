@@ -1,5 +1,5 @@
-DROP TABLE IF EXISTS Users;
-CREATE TABLE IF NOT EXISTS Users (
+DROP TABLE IF EXISTS users;
+CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT UNIQUE NOT NULL, 
   email TEXT NOT NULL, 
@@ -7,5 +7,5 @@ CREATE TABLE IF NOT EXISTS Users (
   passwordHash TEXT NOT NULL,
   verified INTEGER DEFAULT 0 CHECK(verified IN (0, 1))
 );
-INSERT INTO Users (name, email, type, passwordHash, verified) 
-VALUES ('maria', 'maria@alfreds.com', 'admin', 'hashxxx', 0);
+INSERT INTO users (name, email, type, passwordHash, verified) 
+VALUES ('alice', 'alice@alice.com', 'human', 'hashxxx', 0);

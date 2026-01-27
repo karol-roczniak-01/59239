@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode, FormEvent } from "react";
 import { twMerge } from "tailwind-merge";
 
 interface CardHeaderProps {
@@ -14,6 +14,8 @@ interface CardContentProps {
 interface CardProps {
   children: ReactNode;
   className?: string;
+  asForm?: boolean;
+  onSubmit?: (e: FormEvent<HTMLFormElement>) => void;
 }
 
 interface CardFooterProps {
@@ -21,9 +23,22 @@ interface CardFooterProps {
   className?: string;
 }
 
-const Card = ({ children, className }: CardProps) => {
+const Card = ({ children, className, asForm = false, onSubmit }: CardProps) => {
+  const baseClassName = twMerge("md:w-md w-full h-fit max-h-full flex flex-col border-primary border", className);
+  
+  if (asForm) {
+    return (
+      <form 
+        className={baseClassName}
+        onSubmit={onSubmit}
+      >
+        {children}
+      </form>
+    );
+  }
+  
   return (
-    <div className={twMerge("md:w-sm w-full h-fit max-h-full flex flex-col border-primary border", className)}>
+    <div className={baseClassName}>
       {children}
     </div>
   );

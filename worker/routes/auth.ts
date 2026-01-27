@@ -126,7 +126,7 @@ auth.get('/api/users/check-username/:username', async (c) => {
     
     // Check if username exists
     const existing = await c.env.DB
-      .prepare('SELECT id FROM Users WHERE name = ?')
+      .prepare('SELECT id FROM users WHERE name = ?')
       .bind(username)
       .first();
     
@@ -153,7 +153,7 @@ auth.post('/api/users/signup', async (c) => {
 
     // Check for existing user
     const existing = await c.env.DB
-      .prepare('SELECT id FROM Users WHERE email = ? OR name = ?')
+      .prepare('SELECT id FROM users WHERE email = ? OR name = ?')
       .bind(email, name)
       .first();
 
@@ -166,7 +166,7 @@ auth.post('/api/users/signup', async (c) => {
 
     // Insert new user
     const result = await c.env.DB
-      .prepare('INSERT INTO Users (name, email, type, passwordHash, verified) VALUES (?, ?, ?, ?, ?)')
+      .prepare('INSERT INTO users (name, email, type, passwordHash, verified) VALUES (?, ?, ?, ?, ?)')
       .bind(name, email, userType, passwordHash, 0)
       .run();
 
@@ -216,7 +216,7 @@ auth.post('/api/users/login', async (c) => {
 
     // Get user from database
     const user = await c.env.DB
-      .prepare('SELECT id, name, email, type, passwordHash, verified FROM Users WHERE email = ?')
+      .prepare('SELECT id, name, email, type, passwordHash, verified FROM users WHERE email = ?')
       .bind(email)
       .first<DbAuthUser>();
 
@@ -279,7 +279,7 @@ auth.get('/api/users/me', verifyAuth, async (c) => {
     const userPayload = c.get('user') as JwtPayload;
     
     const user = await c.env.DB
-      .prepare('SELECT id, name, email, type, verified FROM Users WHERE id = ?')
+      .prepare('SELECT id, name, email, type, verified FROM users WHERE id = ?')
       .bind(userPayload.userId)
       .first<Omit<DbAuthUser, 'passwordHash'>>();
 

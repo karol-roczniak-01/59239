@@ -1,7 +1,13 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import Layout from '@/components/Layout'
 import Loader from '@/components/Loader'
-import type { AuthContext, User } from '../utils/types'
+import type { AuthContext, LoginCredentials, SignupData, User } from '../utils/types'
+import { 
+  fetchCurrentUser, 
+  loginUser, 
+  signupUser, 
+  logoutUser,
+} from '../hooks/useAuth'
 
 const Auth = createContext<AuthContext | null>(null)
 
@@ -11,77 +17,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check for existing session on mount
   useEffect(() => {
-    // Cookie is automatically sent with fetch (credentials: 'include')
-    fetch('/api/users/me', {
-      credentials: 'include' // Critical: sends httpOnly cookies
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('Not authenticated')
-        return res.json()
-      })
-      .then(data => {
-        if (data.user) {
-          setUser(data.user)
-        }
-      })
-      .catch(() => {
-        // No valid session, user stays null
-        setUser(null)
-      })
+    fetchCurrentUser()
+      .then(user => setUser(user))
+      .catch(() => setUser(null))
       .finally(() => setIsLoading(false))
   }, [])
 
   const login = async (email: string, password: string) => {
-    const res = await fetch('/api/users/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include', // Critical: allows server to set cookies
-      body: JSON.stringify({ email, password })
-    })
-
-    if (!res.ok) {
-      const error = await res.json()
-      throw new Error(error.error || 'Login failed')
-    }
-
-    const data = await res.json()
-    setUser(data.user)
-    window.location.href = '/'  // Simple reload, or use router.invalidate()
-
-    // No need to manually store token - it's in httpOnly cookie
+    const credentials: LoginCredentials = { email, password }
+    const user = await loginUser(credentials)
+    setUser(user)
+    // Force a full page reload to ensure all route loaders run with new auth state
+    window.location.href = '/'
   }
 
   const signup = async (name: string, email: string, password: string, type: string) => {
-    const res = await fetch('/api/users/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include', // Critical: allows server to set cookies
-      body: JSON.stringify({ name, email, password, type })
-    })
-
-    if (!res.ok) {
-      const error = await res.json()
-      throw new Error(error.error || 'Signup failed')
-    }
-
-    const data = await res.json()
-    setUser(data.user)
-    window.location.href = '/'  // Simple reload, or use router.invalidate()
-    // No need to manually store token - it's in httpOnly cookie
+    const signupData: SignupData = { name, email, password, type }
+    const user = await signupUser(signupData)
+    setUser(user)
+    // Force a full page reload to ensure all route loaders run with new auth state
+    window.location.href = '/'
   }
 
   const logout = async () => {
     try {
-      await fetch('/api/users/signout', {
-        method: 'POST',
-        credentials: 'include' // Critical: sends cookie to be cleared
-      })
+      await logoutUser()
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
       setUser(null)
-      window.location.href = '/'  // Simple reload, or use router.invalidate()
-      // Cookie is cleared by server
+      // Force a full page reload to ensure all route loaders run with cleared auth state
+      window.location.href = '/'
     }
   }
 
@@ -109,7 +75,7 @@ export function useAuthFetch() {
   return async (url: string, options: RequestInit = {}) => {
     return fetch(url, {
       ...options,
-      credentials: 'include', // Always include cookies
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         ...options.headers

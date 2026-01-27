@@ -81,7 +81,10 @@ function RouteComponent() {
                 <div
                   key={user.id}
                   className='p-2 border border-border cursor-pointer hover:bg-accent'
-                  onClick={() => navigate({ to: `/user/${user.name}` })}
+                  onClick={() => navigate({ 
+                    to: '/user/$name', 
+                    params: { name: user.name } 
+                  })}
                 >
                   {user.name}
                 </div>
