@@ -1,4 +1,4 @@
-- limit api requests per day
+- (NOW) limit api requests per day
 - limit number of active demands and supplies(?)
 - take a look on ai matching. Why it works bad
 - set correct chrome colors

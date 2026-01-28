@@ -17,7 +17,7 @@ function RouteComponent() {
     <Layout>
       <Card className='md:w-xs'>
         <CardContent>
-          You are logged in as <u>{auth.user?.name}</u>, and we will contact you at <u>{auth.user?.email}</u>. If you need to reach us, please write to: <u>help@59239.com</u>.        
+          You are logged in as <u>{auth.user?.name}</u>, and we will contact you at <u>{auth.user?.email}</u>. If you need to reach us, please write to: <u>help@19188103.com</u>.        
         </CardContent>
       </Card>
     </Layout>
