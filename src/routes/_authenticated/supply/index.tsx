@@ -2,15 +2,15 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/Card'
 import Layout from '@/components/Layout'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { demandByUserIdQueryOptions } from '@/hooks/useDemand'
+import { demandsUserAppliedToQueryOptions } from '@/hooks/useSupply'
 import Loader from '@/components/Loader'
 import { Button } from '@/components/Button'
 
-export const Route = createFileRoute('/_authenticated/demand/')({
+export const Route = createFileRoute('/_authenticated/supply/')({
   pendingComponent: () => <Loader />,
   loader: ({ context: { queryClient, auth } }) => {
     if (!auth.user?.id) throw new Error('User not authenticated');
-    return queryClient.ensureQueryData(demandByUserIdQueryOptions(auth.user.id));
+    return queryClient.ensureQueryData(demandsUserAppliedToQueryOptions(auth.user.id));
   },
   component: RouteComponent,
 })
@@ -19,40 +19,48 @@ function RouteComponent() {
   const { auth } = Route.useRouteContext();
   const navigate = useNavigate();
   
-  const { data: demands } = useSuspenseQuery(
-    demandByUserIdQueryOptions(auth.user!.id)
+  const { data: appliedDemands } = useSuspenseQuery(
+    demandsUserAppliedToQueryOptions(auth.user!.id)
   );
 
   return (
     <Layout>
       <Card className='h-full'>
         <CardHeader>
-          My Demand ({demands.length})
+          My Applications ({appliedDemands.length})
         </CardHeader>
         <CardContent>
-          {demands.length === 0 ? (
+          {appliedDemands.length === 0 ? (
             <p className='text-muted-foreground text-center py-4'>
-              You haven't posted any demands yet
+              You haven't applied to any demands yet
             </p>
           ) : (
             <div className='space-y-2'>
-              {demands.map((demand) => {
+              {appliedDemands.map((item) => {
+                const isExpired = Date.now() / 1000 > item.endingAt;
+                
                 return (
                   <div
-                    key={demand.id}
+                    key={item.supplyId}
                     className='p-2 border border-primary cursor-pointer space-y-2'
                     onClick={() => navigate({ 
                       to: '/demand/$demandId', 
-                      params: { demandId: demand.id.toString() } 
+                      params: { demandId: item.id.toString() } 
                     })}
                   >
                     <div className='flex justify-between items-start text-sm'>
-                      <p>#{demand.id.slice(0, 8)}</p>
-                      <p>
-                        {new Date(demand.createdAt * 1000).toLocaleDateString()}
-                      </p>
+                      <p>#{item.id.slice(0, 8)}</p>
+                      <div className='text-right'>
+                        <p>Applied: {new Date(item.appliedAt * 1000).toLocaleDateString()}</p>
+                        {isExpired && (
+                          <p className='text-primary/70 text-xs'>Expired</p>
+                        )}
+                      </div>
                     </div>
-                    <p>{demand.content}</p>
+                    <div className='space-y-1'>
+                      <p className='opacity-70'>- {item.content}</p>
+                      <p>- {item.supplyContent}</p>
+                    </div>
                   </div>
                 );
               })}
@@ -61,10 +69,10 @@ function RouteComponent() {
         </CardContent>
         <CardFooter>
           <Button 
-            onClick={() => navigate({ to: "/demand/new" })}
+            onClick={() => navigate({ to: "/supply/new" })}
             className='w-full'
           >
-            Create
+            Supply
           </Button>
         </CardFooter>
       </Card>

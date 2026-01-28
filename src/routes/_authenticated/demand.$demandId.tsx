@@ -22,10 +22,9 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 export const Route = createFileRoute('/_authenticated/demand/$demandId')({
   pendingComponent: () => <Loader />,
   loader: ({ context: { queryClient, auth }, params: { demandId } }) => {
-    const id = Number(demandId);
     return Promise.all([
-      queryClient.ensureQueryData(demandByIdQueryOptions(id, auth.user?.id)),
-      queryClient.ensureQueryData(supplyByDemandIdQueryOptions(id))
+      queryClient.ensureQueryData(demandByIdQueryOptions(demandId, auth.user?.id)),
+      queryClient.ensureQueryData(supplyByDemandIdQueryOptions(demandId))
     ]);
   },
   component: RouteComponent,
@@ -34,11 +33,15 @@ export const Route = createFileRoute('/_authenticated/demand/$demandId')({
 function RouteComponent() {
   const { auth } = Route.useRouteContext();
   const { demandId } = Route.useParams()
-  const { data: demandData } = useSuspenseQuery(demandByIdQueryOptions(Number(demandId), auth.user?.id))
-  const { data: supply } = useSuspenseQuery(supplyByDemandIdQueryOptions(Number(demandId)))
+  const { data: demandData } = useSuspenseQuery(demandByIdQueryOptions(demandId, auth.user?.id))
+  const { data: supply } = useSuspenseQuery(supplyByDemandIdQueryOptions(demandId))
   
   const demand = demandData.demand;
   const hasApplied = demandData.hasApplied;
+  
+  // Calculate if expired on frontend
+  const currentTime = Math.floor(Date.now() / 1000);
+  const isExpired = currentTime > demand.endingAt;
   
   const [content, setContent] = useState('')
   const [email, setEmail] = useState('')
@@ -53,6 +56,10 @@ function RouteComponent() {
   
   const { mutate: createSupply, isPending, error } = useCreateSupply()
 
+  // Calculate days left
+  const secondsLeft = demand.endingAt - currentTime;
+  const daysLeft = Math.ceil(secondsLeft / 86400);
+
   const handleInitiatePayment = async () => {
     if (!content.trim() || !email.trim() || content.trim().length < 30 || !auth.user?.id) return
 
@@ -64,7 +71,7 @@ function RouteComponent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          demandId: Number(demandId),
+          demandId: demandId,
           userId: auth.user.id
         })
       })
@@ -89,7 +96,7 @@ function RouteComponent() {
     // Submit supply with payment
     createSupply(
       {
-        demandId: Number(demandId),
+        demandId: demandId,
         content: content.trim(),
         email: email.trim(),
         phone: phone.trim() || undefined,
@@ -104,6 +111,8 @@ function RouteComponent() {
           setShowPayment(false)
           setClientSecret(null)
           setPaymentIntentId(null)
+          setView('details')
+          setShowApplyDialog(false)
         },
       }
     )
@@ -115,16 +124,28 @@ function RouteComponent() {
 
   const schema = JSON.parse(demand.schema)
 
+  console.log('applied', hasApplied)
+
   return (
     <Layout>
       <Card className='h-full'>
         <CardHeader className='justify-between flex items-center w-full'>
           <span>
-            #{demand.id}
+            #{demand.id.slice(0, 8)}
           </span> 
-          <span>
-            {new Date(demand.createdAt * 1000).toLocaleDateString()}
-          </span>
+          <div className='flex items-center gap-2'>
+            <span>
+              {new Date(demand.createdAt * 1000).toLocaleDateString()},
+            </span>
+            {isExpired ? (
+              <span className='text-primary/70'>Expired</span>
+            ) : (
+              <span className=''>
+                {daysLeft > 0 ? `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left` : 'Expires today'}
+              </span>
+            )}
+            
+          </div>
         </CardHeader>
         <CardContent className='p-0'>
           {view === 'details' ? (
@@ -142,17 +163,17 @@ function RouteComponent() {
               </table>
               
               {/* Show contact info only if user has applied */}
-              {hasApplied && demand.email && demand.phone && (
-                <div className='p-2 bg-primary/5 border-t border-primary space-y-1'>
-                  <p className='text-sm font-medium mb-2'>Contact Information (visible because you applied)</p>
+              {hasApplied && (
+                <div className='p-2 border-primary border-b space-y-1'>
+                  <p className='text-sm'>Contact Information (visible because you applied)</p>
                   <div className='flex gap-2 items-center text-sm'>
-                    <Mail size={16} />
+                    <Mail size={14} />
                     <a href={`mailto:${demand.email}`} className='hover:underline'>
                       {demand.email}
                     </a>
                   </div>
                   <div className='flex gap-2 items-center text-sm'>
-                    <Phone size={16} />
+                    <Phone size={14} />
                     <a href={`tel:${demand.phone}`} className='hover:underline'>
                       {demand.phone}
                     </a>
@@ -171,7 +192,7 @@ function RouteComponent() {
                     }`}
                   >
                     <div className='w-full flex justify-between text-sm'>
-                      <p>#{item.id}</p>
+                      <p>#{item.id.slice(0, 8)}</p>
                       <p>{new Date(item.createdAt * 1000).toLocaleDateString()}</p>
                     </div>
                     <p>{item.content}</p>
@@ -192,7 +213,7 @@ function RouteComponent() {
                   </div>
                 ))
               ) : (
-                <p className='text-muted-foreground text-center py-4'>
+                <p className='text-primary/70'>
                   No supply offers yet
                 </p>
               )}
@@ -219,9 +240,9 @@ function RouteComponent() {
           <Button 
             className='w-full'
             onClick={() => setShowApplyDialog(true)}
-            disabled={hasApplied}
+            disabled={hasApplied || isExpired}
           >
-            {hasApplied ? 'Already Applied' : 'Apply'}
+            {hasApplied ? 'Already Applied' : isExpired ? 'Expired' : 'Apply'}
           </Button>
         </CardFooter>
       </Card>
@@ -237,9 +258,9 @@ function RouteComponent() {
         }}
       >
         {!showPayment ? (
-          <Card className='bg-background md:w-md'>
+          <Card className='bg-background md:w-md w-full'>
             <CardHeader>
-              Apply for: $10.00
+              Apply for: $50.00
             </CardHeader>
             <CardContent className=''>
               <Textarea
@@ -304,13 +325,13 @@ function RouteComponent() {
                     />
                   </Elements>
                   {paymentError && (
-                    <p className="text-red-600 text-sm">
+                    <p className="text-primary/70 text-sm">
                       {paymentError}
                     </p>
                   )}
 
                   {error && (
-                    <p className="text-red-600 text-sm">
+                    <p className="text-primary/70 text-sm">
                       {error instanceof Error ? error.message : 'Failed to submit supply'}
                     </p>
                   )}

@@ -21,7 +21,7 @@ export const searchDemand = async (query: string): Promise<DemandWithScore[]> =>
   return data.demand;
 };
 
-export const fetchDemandById = async (demandId: number, userId?: number): Promise<{ demand: Demand, hasApplied: boolean }> => {
+export const fetchDemandById = async (demandId: string, userId?: string): Promise<{ demand: Demand, hasApplied: boolean }> => {
   const url = userId 
     ? `/api/demand/${demandId}?userId=${userId}`
     : `/api/demand/${demandId}`;
@@ -31,7 +31,7 @@ export const fetchDemandById = async (demandId: number, userId?: number): Promis
   return data;
 };
 
-export const fetchDemandByUserId = async (userId: number): Promise<Demand[]> => {
+export const fetchDemandByUserId = async (userId: string): Promise<Demand[]> => {
   const res = await fetch(`/api/demand/user/${userId}`);
   if (!res.ok) throw new Error('Failed to fetch user demand');
   const data = await res.json();
@@ -40,7 +40,7 @@ export const fetchDemandByUserId = async (userId: number): Promise<Demand[]> => 
 
 // ===== QUERIES =====
 
-export const demandByIdQueryOptions = (demandId: number, userId?: number) =>
+export const demandByIdQueryOptions = (demandId: string, userId?: string) =>
   queryOptions({
     queryKey: ['demand', 'by-id', demandId, userId],
     queryFn: () => fetchDemandById(demandId, userId),
@@ -48,7 +48,7 @@ export const demandByIdQueryOptions = (demandId: number, userId?: number) =>
     gcTime: 10 * 60 * 1000,
   });
 
-export const demandByUserIdQueryOptions = (userId: number) =>
+export const demandByUserIdQueryOptions = (userId: string) =>
   queryOptions({
     queryKey: ['demand', 'by-user', userId],
     queryFn: () => fetchDemandByUserId(userId),

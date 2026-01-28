@@ -7,11 +7,11 @@ export const sanitizeInput = (input: string): string => {
     .trim();
 };
 
-export const supplyIdSchema = z.coerce.number().int().positive('Invalid supply ID');
+export const supplyIdSchema = z.uuid('Invalid supply ID');
 
-export const demandIdSchema = z.coerce.number().int().positive('Invalid demand ID');
+export const demandIdSchema = z.uuid('Invalid demand ID');
 
-export const userIdSchema = z.coerce.number().int().positive('Invalid user ID');
+export const userIdSchema = z.uuid('Invalid user ID');
 
 export const supplyContentSchema = z.string()
   .min(30, 'Supply description must be at least 30 characters')
@@ -33,8 +33,8 @@ export const paymentIntentIdSchema = z.string()
   .min(1, 'Payment Intent ID is required');
 
 export const supplySchema = z.object({
-  id: z.number(),
-  demandId: z.number(),
+  id: z.uuid(),
+  demandId: z.uuid(),
   userId: z.number(),
   content: z.string(),
   email: z.string(),

@@ -54,18 +54,18 @@ export function PaymentForm({ clientSecret, onSuccess, onError, disabled }: Paym
         <label className="text-sm font-medium mb-2 block">
           Card Details
         </label>
-        <div className="border border-border rounded-md p-3 bg-background">
+        <div className="border border-primary p-2 bg-background">
           <CardElement
             options={{
               style: {
                 base: {
                   fontSize: '14px',
-                  color: 'hsl(var(--foreground))',
+                  color: '#ff8904',
                   fontFamily: 'system-ui, -apple-system, sans-serif',
                   '::placeholder': {
-                    color: 'hsl(var(--muted-foreground))',
+                    color: '#ff8904',
                   },
-                  iconColor: 'hsl(var(--foreground))',
+                  iconColor: '#ff8904',
                 },
                 invalid: {
                   color: 'hsl(var(--destructive))',
@@ -84,7 +84,7 @@ export function PaymentForm({ clientSecret, onSuccess, onError, disabled }: Paym
           disabled={!stripe || isProcessing || disabled}
           className="w-full"
         >
-          {isProcessing ? 'Processing...' : 'Pay $10.00'}
+          {isProcessing ? 'Processing...' : 'Pay $50.00'}
         </Button>
       </div>
     </form>

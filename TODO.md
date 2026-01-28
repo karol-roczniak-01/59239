@@ -1,6 +1,4 @@
-- use uuid's instead of numbers
-- add endingAt for demands
 - limit api requests per day
-- limit number of active demands
+- limit number of active demands and supplies(?)
 - take a look on ai matching. Why it works bad
-- finish me page
+- set correct chrome colors

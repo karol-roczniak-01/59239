@@ -72,7 +72,7 @@ function RouteComponent() {
               <LoaderIcon className='shrink-0 animate-spin' size={16} />
             </div>
           ) : error ? (
-            <p className='text-red-500'>Error: {error.message}</p>
+            <p className='text-primary/70'>Error: {error.message}</p>
           ) : !debouncedSearchTerm || debouncedSearchTerm.length <= 1 ? (
             null
           ) : users && users.length > 0 ? (

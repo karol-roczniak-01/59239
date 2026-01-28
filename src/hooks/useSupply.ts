@@ -1,15 +1,5 @@
-import type { Supply } from "@/utils/types";
+import type { CreateSupplyInput, DemandWithSupplyDetails, Supply } from "@/utils/types";
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
-
-// Updated to include optional phone and paymentIntentId
-export interface CreateSupplyInput {
-  demandId: number;
-  content: string;
-  email: string;
-  phone?: string; // Made optional
-  userId: number;
-  paymentIntentId: string;
-}
 
 // ===== API FUNCTIONS ======
 
@@ -27,28 +17,35 @@ export const createSupply = async (input: CreateSupplyInput): Promise<Supply> =>
   return data.supply;
 };
 
-export const fetchSupplyById = async (supplyId: number): Promise<Supply> => {
+export const fetchSupplyById = async (supplyId: string): Promise<Supply> => {
   const res = await fetch(`/api/supply/${supplyId}`);
   if (!res.ok) throw new Error('Failed to fetch supply');
   const data = await res.json();
   return data.supply;
 };
 
-export const fetchSupplyByDemandId = async (demandId: number): Promise<Supply[]> => {
+export const fetchSupplyByDemandId = async (demandId: string): Promise<Supply[]> => {
   const res = await fetch(`/api/supply/demand/${demandId}`);
   if (!res.ok) throw new Error('Failed to fetch supply for demand');
   const data = await res.json();
   return data.supply;
 };
 
-export const fetchSupplyByUserId = async (userId: number): Promise<Supply[]> => {
+export const fetchSupplyByUserId = async (userId: string): Promise<Supply[]> => {
   const res = await fetch(`/api/supply/user/${userId}`);
   if (!res.ok) throw new Error('Failed to fetch user supply');
   const data = await res.json();
   return data.supply;
 };
 
-export const deleteSupply = async (supplyId: number): Promise<void> => {
+export const fetchDemandsUserAppliedTo = async (userId: string): Promise<DemandWithSupplyDetails[]> => {
+  const res = await fetch(`/api/supply/user/${userId}/demands`);
+  if (!res.ok) throw new Error('Failed to fetch applied demands');
+  const data = await res.json();
+  return data.demands;
+};
+
+export const deleteSupply = async (supplyId: string): Promise<void> => {
   const res = await fetch(`/api/supply/${supplyId}`, {
     method: 'DELETE',
   });
@@ -60,7 +57,7 @@ export const deleteSupply = async (supplyId: number): Promise<void> => {
 
 // ===== QUERIES =====
 
-export const supplyByIdQueryOptions = (supplyId: number) =>
+export const supplyByIdQueryOptions = (supplyId: string) =>
   queryOptions({
     queryKey: ['supply', 'by-id', supplyId],
     queryFn: () => fetchSupplyById(supplyId),
@@ -68,7 +65,7 @@ export const supplyByIdQueryOptions = (supplyId: number) =>
     gcTime: 10 * 60 * 1000,
   });
 
-export const supplyByDemandIdQueryOptions = (demandId: number) =>
+export const supplyByDemandIdQueryOptions = (demandId: string) =>
   queryOptions({
     queryKey: ['supply', 'by-demand', demandId],
     queryFn: () => fetchSupplyByDemandId(demandId),
@@ -76,10 +73,18 @@ export const supplyByDemandIdQueryOptions = (demandId: number) =>
     gcTime: 10 * 60 * 1000,
   });
 
-export const supplyByUserIdQueryOptions = (userId: number) =>
+export const supplyByUserIdQueryOptions = (userId: string) =>
   queryOptions({
     queryKey: ['supply', 'by-user', userId],
     queryFn: () => fetchSupplyByUserId(userId),
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 10 * 60 * 1000,
+  });
+
+export const demandsUserAppliedToQueryOptions = (userId: string) =>
+  queryOptions({
+    queryKey: ['supply', 'user-applied-demands', userId],
+    queryFn: () => fetchDemandsUserAppliedTo(userId),
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 10 * 60 * 1000,
   });

@@ -16,7 +16,7 @@ export type Env = {
 
 export type Variables = {
   user?: {
-    userId: number;
+    userId: string;
     email: string;
     type: string;
   };

@@ -21,8 +21,8 @@ const handleZodError = (error: unknown) => {
 // CREATE PAYMENT INTENT
 // ============================================================================
 const createPaymentIntentSchema = z.object({
-  demandId: z.number().int().positive(),
-  userId: z.number().int().positive()
+  demandId: z.uuid(),
+  userId: z.uuid()
 });
 
 payment.post('/api/payment/create-intent', async (c) => {
@@ -48,10 +48,10 @@ payment.post('/api/payment/create-intent', async (c) => {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        amount: '1000', // $10.00 in cents
+        amount: '50000', // $50.00 in cents
         currency: 'usd',
-        'metadata[demandId]': validated.demandId.toString(),
-        'metadata[userId]': validated.userId.toString(),
+        'metadata[demandId]': validated.demandId,
+        'metadata[userId]': validated.userId,
         'automatic_payment_methods[enabled]': 'true',
       }),
     });

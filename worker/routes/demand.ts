@@ -1,12 +1,13 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
+import { v4 as uuidv4 } from 'uuid';
 import { 
   demandIdSchema, 
   userIdSchema, 
   createDemandSchema,
   searchQuerySchema,
   type Demand 
-} from '../schemas/demand';
+} from '../schemas/demandSchema';
 import type { Env } from '..';
 import type { Ai } from '@cloudflare/workers-types';
 
@@ -76,8 +77,11 @@ demand.post('/api/demand', async (c) => {
   try {
     const body = await c.req.json();
     
-    // Validate input (now includes userId, email, phone - phone is optional)
+    // Validate input (now includes days for duration)
     const validatedInput = createDemandSchema.parse(body);
+
+    // Generate UUID for the demand
+    const id = uuidv4();
 
     // Generate schema using AI
     const schemaJson = await generateSchemaFromContent(
@@ -88,11 +92,14 @@ demand.post('/api/demand', async (c) => {
     // Generate embedding for semantic search
     const embedding = await generateEmbedding(validatedInput.content, c.env.AI);
 
-    // Insert into D1 - use empty string if phone is not provided
+    // Calculate timestamps
     const createdAt = Math.floor(Date.now() / 1000);
+    const endingAt = createdAt + (validatedInput.days * 86400); // days * seconds per day
+
+    // Insert into D1 - use empty string if phone is not provided
     const result = await c.env.DB
-      .prepare('INSERT INTO demand (userId, content, schema, email, phone, createdAt) VALUES (?, ?, ?, ?, ?, ?) RETURNING *')
-      .bind(validatedInput.userId, validatedInput.content, schemaJson, validatedInput.email, validatedInput.phone || '', createdAt)
+      .prepare('INSERT INTO demand (id, userId, content, schema, email, phone, createdAt, endingAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *')
+      .bind(id, validatedInput.userId, validatedInput.content, schemaJson, validatedInput.email, validatedInput.phone || '', createdAt, endingAt)
       .first<Demand>();
 
     if (!result) {
@@ -102,12 +109,13 @@ demand.post('/api/demand', async (c) => {
     // Insert into Vectorize
     await c.env.VECTORIZE.insert([
       {
-        id: result.id.toString(),
+        id: result.id,
         values: embedding,
         metadata: {
           userId: result.userId,
           content: result.content,
-          createdAt: result.createdAt
+          createdAt: result.createdAt,
+          endingAt: result.endingAt
         }
       }
     ]);
@@ -125,7 +133,7 @@ demand.post('/api/demand', async (c) => {
 });
 
 // ============================================================================
-// SEARCH DEMANDS (Semantic Search)
+// SEARCH DEMANDS (Semantic Search - Filter out expired)
 // ============================================================================
 demand.get('/api/demand/search', async (c) => {
   try {
@@ -151,15 +159,18 @@ demand.get('/api/demand/search', async (c) => {
     }
 
     const placeholders = demandIds.map(() => '?').join(',');
+    const currentTime = Math.floor(Date.now() / 1000);
+    
+    // Filter out expired demands
     const demandResult = await c.env.DB
-      .prepare(`SELECT * FROM demand WHERE id IN (${placeholders})`)
-      .bind(...demandIds)
+      .prepare(`SELECT * FROM demand WHERE id IN (${placeholders}) AND endingAt > ?`)
+      .bind(...demandIds, currentTime)
       .all();
 
     // Combine with similarity scores and filter out null demands
     const demandWithScores = results.matches
       .map(match => {
-        const demand = demandResult.results.find(d => (d as Demand).id.toString() === match.id);
+        const demand = demandResult.results.find(d => (d as Demand).id === match.id);
         return {
           demand,
           score: match.score
@@ -183,7 +194,7 @@ demand.get('/api/demand/search', async (c) => {
 });
 
 // ============================================================================
-// GET DEMAND BY ID
+// GET DEMAND BY ID (No filtering - allow viewing expired demands)
 // ============================================================================
 demand.get('/api/demand/:demandId', async (c) => {
   try {
@@ -215,6 +226,10 @@ demand.get('/api/demand/:demandId', async (c) => {
       hasApplied = !!supply;
     }
 
+    // Check if demand is expired
+    const currentTime = Math.floor(Date.now() / 1000);
+    const isExpired = currentTime > demand.endingAt;
+
     // If user hasn't applied, remove email and phone
     const responseDemand = hasApplied ? demand : {
       ...demand,
@@ -222,7 +237,7 @@ demand.get('/api/demand/:demandId', async (c) => {
       phone: undefined
     };
 
-    return c.json({ demand: responseDemand, hasApplied });
+    return c.json({ demand: responseDemand, hasApplied, isExpired });
   } catch (error) {
     const zodError = handleZodError(error);
     if (zodError) {
@@ -244,7 +259,7 @@ demand.get('/api/demand/user/:userId', async (c) => {
     // Validate user ID
     const validatedUserId = userIdSchema.parse(userId);
 
-    // Query demand by user ID
+    // Query demand by user ID (include expired demands for user's own view)
     const result = await c.env.DB
       .prepare('SELECT * FROM demand WHERE userId = ? ORDER BY createdAt DESC')
       .bind(validatedUserId)

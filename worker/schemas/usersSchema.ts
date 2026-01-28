@@ -17,7 +17,7 @@ export const userNameSchema = z.string()
     { message: 'Username can only contain letters, numbers, underscores, and hyphens' }
   );
 
-export const userIdSchema = z.coerce.number().int().positive('Invalid user ID');
+export const userIdSchema = z.uuid('Invalid user ID')
 
 export const searchQuerySchema = z.string()
   .max(100, 'Search query is too long')
@@ -29,7 +29,7 @@ export const searchQuerySchema = z.string()
 export const userTypeSchema = z.enum(['human', 'organization']);
 
 export const dbUserSchema = z.object({
-  id: z.number(),
+  id: z.uuid(),
   name: z.string(),
   email: z.string(),
   type: z.string(),
@@ -37,7 +37,7 @@ export const dbUserSchema = z.object({
 });
 
 export const apiUserSchema = z.object({
-  id: z.number(),
+  id: z.uuid(),
   name: z.string(),
   email: z.string(),
   type: z.string(),

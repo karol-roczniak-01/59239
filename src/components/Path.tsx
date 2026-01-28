@@ -39,7 +39,7 @@ const Path = () => {
               paddingLeft: `${item.depth * 6}px`
             }}
           >
-            {item.depth > 0 && "└─ "}{item.label}
+            {item.depth > 0 && "└─ "}{item.label.slice(0, 12)}
           </Link>
         );
       })}

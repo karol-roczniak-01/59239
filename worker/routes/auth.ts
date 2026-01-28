@@ -10,7 +10,7 @@ import {
   type DbAuthUser,
   type ApiAuthUser,
   type JwtPayload
-} from '../schemas/auth';
+} from '../schemas/authSchema';
 
 const auth = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -88,7 +88,7 @@ export const verifyAuth = async (c: any, next: any) => {
     const token = cookies[COOKIE_NAME];
     
     if (!token) {
-      console.log('[verifyAuth] No token - returning 401'); // ADD THIS
+      console.log('[verifyAuth] No token - returning 401');
       return c.json({ error: 'Unauthorized' }, 401);
     }
     
@@ -100,7 +100,7 @@ export const verifyAuth = async (c: any, next: any) => {
     
     await next();
   } catch (error) {
-    console.error('[verifyAuth] Error:', error); // ADD THIS
+    console.error('[verifyAuth] Error:', error);
     return c.json({ error: 'Invalid or expired token' }, 401);
   }
 };
@@ -149,7 +149,7 @@ auth.post('/api/users/signup', async (c) => {
 
     // Validate and sanitize with Zod
     const validatedData = signupSchema.parse(body);
-    const { name, email, password, type: userType = 'human' } = validatedData;
+    const { id, name, email, password, type: userType = 'human' } = validatedData;
 
     // Check for existing user
     const existing = await c.env.DB
@@ -164,17 +164,15 @@ auth.post('/api/users/signup', async (c) => {
     // Hash password with bcrypt
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
-    // Insert new user
-    const result = await c.env.DB
-      .prepare('INSERT INTO users (name, email, type, passwordHash, verified) VALUES (?, ?, ?, ?, ?)')
-      .bind(name, email, userType, passwordHash, 0)
+    // Insert new user with provided UUID
+    await c.env.DB
+      .prepare('INSERT INTO users (id, name, email, type, passwordHash, verified) VALUES (?, ?, ?, ?, ?, ?)')
+      .bind(id, name, email, userType, passwordHash, 0)
       .run();
-
-    const userId = result.meta.last_row_id as number;
 
     // Create JWT token
     const jwtSecret = new TextEncoder().encode(c.env.JWT_SECRET_KEY);
-    const token = await new SignJWT({ userId, email, type: userType })
+    const token = await new SignJWT({ userId: id, email, type: userType })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
       .setExpirationTime(JWT_EXPIRATION)
@@ -185,7 +183,7 @@ auth.post('/api/users/signup', async (c) => {
 
     return c.json({
       message: 'Account created successfully',
-      user: { id: userId, name, email, type: userType, verified: false }
+      user: { id, name, email, type: userType, verified: false }
     }, 201);
   } catch (error) {
     const zodError = handleZodError(error);

@@ -11,11 +11,11 @@ const Dialog: React.FC<DialogProps> = ({ isOpen, onClose, children }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-background/90 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-background/90 flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
       <div 
-        className="max-h-full" 
+        className="max-h-full w-full flex items-center justify-center" 
         onClick={(e) => e.stopPropagation()}
       >
         {children}

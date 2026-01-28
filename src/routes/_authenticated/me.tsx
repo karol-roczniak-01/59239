@@ -1,21 +1,25 @@
-import { Button } from '@/components/Button'
-import { useTheme } from '@/hooks/useTheme'
+import { Card, CardContent } from '@/components/Card'
+import Layout from '@/components/Layout'
+import Loader from '@/components/Loader'
+//import { useTheme } from '@/hooks/useTheme'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authenticated/me')({
+  pendingComponent: () => <Loader />,
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  const { isDark, toggleTheme } = useTheme()
+  const { auth } = Route.useRouteContext();
+  //const { isDark, toggleTheme } = useTheme()
   
   return (
-    <div>
-      <Button 
-        onClick={toggleTheme}
-      >
-        Switch to {!isDark ? 'Light' : 'Dark'} Mode
-      </Button>
-    </div>
+    <Layout>
+      <Card className='md:w-xs'>
+        <CardContent>
+          You are logged in as <u>{auth.user?.name}</u>, and we will contact you at <u>{auth.user?.email}</u>. If you need to reach us, please write to: <u>help@59239.com</u>.        
+        </CardContent>
+      </Card>
+    </Layout>
   )
 }

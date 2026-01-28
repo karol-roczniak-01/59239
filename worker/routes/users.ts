@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
-import { searchQuerySchema, userNameSchema, userIdSchema, type ApiUser, type DbUser } from '../schemas/users';
+import { searchQuerySchema, userNameSchema, userIdSchema, type ApiUser, type DbUser } from '../schemas/usersSchema';
 import type { Env } from '..';
 
 const users = new Hono<{ Bindings: Env }>();

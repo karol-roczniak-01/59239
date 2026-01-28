@@ -1,12 +1,13 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
+import { v4 as uuidv4 } from 'uuid';
 import { 
   supplyIdSchema, 
   demandIdSchema,
   userIdSchema,
   createSupplySchema,
   type Supply 
-} from '../schemas/supply';
+} from '../schemas/supplySchema';
 import type { Env } from '..';
 
 const supply = new Hono<{ Bindings: Env }>();
@@ -38,6 +39,22 @@ supply.post('/api/supply', async (c) => {
     // Validate input (now includes paymentIntentId, phone is optional)
     const validatedInput = createSupplyWithPaymentSchema.parse(body);
 
+    // Check if demand exists and is not expired
+    const demand = await c.env.DB
+      .prepare('SELECT id, endingAt FROM demand WHERE id = ?')
+      .bind(validatedInput.demandId)
+      .first<{ id: string; endingAt: number }>();
+
+    if (!demand) {
+      return c.json({ error: 'Demand not found' }, 404);
+    }
+
+    // Check if demand is expired
+    const currentTime = Math.floor(Date.now() / 1000);
+    if (currentTime > demand.endingAt) {
+      return c.json({ error: 'This demand has expired and is no longer accepting applications' }, 400);
+    }
+
     // Verify payment with Stripe
     const paymentResponse = await fetch(
       `https://api.stripe.com/v1/payment_intents/${validatedInput.paymentIntentId}`,
@@ -60,7 +77,7 @@ supply.post('/api/supply', async (c) => {
     }
 
     // Verify payment matches the demand
-    if (paymentIntent.metadata.demandId !== validatedInput.demandId.toString()) {
+    if (paymentIntent.metadata.demandId !== validatedInput.demandId) {
       return c.json({ error: 'Payment does not match demand' }, 400);
     }
 
@@ -74,26 +91,20 @@ supply.post('/api/supply', async (c) => {
       return c.json({ error: 'Payment already used' }, 409);
     }
 
-    // Check if demand exists
-    const demand = await c.env.DB
-      .prepare('SELECT id FROM demand WHERE id = ?')
-      .bind(validatedInput.demandId)
-      .first();
-
-    if (!demand) {
-      return c.json({ error: 'Demand not found' }, 404);
-    }
+    // Generate UUID for the supply
+    const id = uuidv4();
 
     // Insert into D1 with paymentIntentId - use empty string if phone not provided
     const createdAt = Math.floor(Date.now() / 1000);
     const result = await c.env.DB
       .prepare(`
         INSERT INTO supply 
-        (demandId, userId, content, email, phone, paymentIntentId, createdAt) 
-        VALUES (?, ?, ?, ?, ?, ?, ?) 
+        (id, demandId, userId, content, email, phone, paymentIntentId, createdAt) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?) 
         RETURNING *
       `)
       .bind(
+        id,
         validatedInput.demandId, 
         validatedInput.userId, 
         validatedInput.content, 
@@ -216,6 +227,47 @@ supply.get('/api/supply/:supplyId', async (c) => {
     
     console.error('[Get Supply By ID] Error:', error);
     return c.json({ error: 'Failed to retrieve supply' }, 500);
+  }
+});
+
+// ============================================================================
+// GET DEMANDS WHERE USER HAS SUPPLIED
+// ============================================================================
+supply.get('/api/supply/user/:userId/demands', async (c) => {
+  try {
+    const userId = c.req.param('userId');
+
+    // Validate user ID
+    const validatedUserId = userIdSchema.parse(userId);
+
+    // Query demands where user has supplied, including supply details
+    const result = await c.env.DB
+      .prepare(`
+        SELECT 
+          d.*,
+          s.id as supplyId,
+          s.content as supplyContent,
+          s.createdAt as appliedAt
+        FROM demand d
+        INNER JOIN supply s ON d.id = s.demandId
+        WHERE s.userId = ?
+        ORDER BY s.createdAt DESC
+      `)
+      .bind(validatedUserId)
+      .all();
+
+    return c.json({ 
+      demands: result.results,
+      count: result.results.length
+    });
+  } catch (error) {
+    const zodError = handleZodError(error);
+    if (zodError) {
+      return c.json({ error: zodError.error }, zodError.status);
+    }
+    
+    console.error('[Get User Applied Demands] Error:', error);
+    return c.json({ error: 'Failed to retrieve applied demands' }, 500);
   }
 });
 

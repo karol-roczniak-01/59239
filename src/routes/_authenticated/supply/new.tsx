@@ -13,7 +13,7 @@ const searchSchema = z.object({
   q: z.string().optional().default(''),
 })
 
-export const Route = createFileRoute('/_authenticated/supply')({
+export const Route = createFileRoute('/_authenticated/supply/new')({
   validateSearch: searchSchema,
   component: RouteComponent,
 })
@@ -82,11 +82,9 @@ function RouteComponent() {
               <LoaderIcon className='shrink-0 animate-spin' size={16} />
             </div>
           ) : error ? (
-            <p className='text-red-500'>Error: {error.message}</p>
+            <p className='text-primary/70'>Error: {error.message}</p>
           ) : !urlSearchQuery || urlSearchQuery.length < 30 ? (
-            <p className='text-muted-foreground text-sm'>
-              Enter at least 30 characters and click Search to find matching demands
-            </p>
+            null
           ) : validResults.length > 0 ? (
             <div className='space-y-2'>
               {validResults.map((result) => {

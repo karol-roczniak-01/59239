@@ -7,7 +7,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useCreateDemand } from '@/hooks/useDemand'
 import { useState } from 'react'
 
-export const Route = createFileRoute('/_authenticated/new-demand')({
+export const Route = createFileRoute('/_authenticated/demand/new')({
   component: RouteComponent,
 })
 
@@ -16,28 +16,35 @@ function RouteComponent() {
   const [content, setContent] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+  const [days, setDays] = useState('30')
   const navigate = useNavigate()
   const { mutate: createDemand, isPending, error } = useCreateDemand()
 
   const handleSubmit = () => {
-    if (!content.trim() || !email.trim() || content.trim().length < 50) return
+    const daysNum = parseInt(days);
+    if (!content.trim() || !email.trim() || content.trim().length < 50 || !daysNum || daysNum < 1 || daysNum > 180) return
     createDemand(
       { 
         content: content.trim(),
         email: email.trim(),
         phone: phone.trim() || undefined,
-        userId: auth.user!.id
+        userId: auth.user!.id,
+        days: daysNum
       },
       {
         onSuccess: () => {
           setContent('')
           setEmail('')
           setPhone('')
+          setDays('30')
           navigate({ to: '/' })
         },
       }
     )
   }
+
+  const daysNum = parseInt(days) || 0;
+  const isValidDays = daysNum >= 1 && daysNum <= 180;
 
   return (
     <Layout>
@@ -73,6 +80,20 @@ function RouteComponent() {
               disabled={isPending}
             />
           </div>
+          <div className='pt-2'>
+            <Input
+              type="number"
+              value={days}
+              onChange={(e) => setDays(e.target.value)}
+              placeholder="Duration in days"
+              min="1"
+              max="180"
+              disabled={isPending}
+            />
+            <p className='text-xs text-muted-foreground pt-1'>
+              {isValidDays ? `Active for ${daysNum} days (max 180)` : 'Enter between 1 and 180 days'}
+            </p>
+          </div>
           <p className='text-xs text-muted-foreground pt-2'>
             Your email and phone will only be visible to users who apply to your demand
           </p>
@@ -86,7 +107,7 @@ function RouteComponent() {
           <Button 
             className='w-full'
             onClick={handleSubmit}
-            disabled={isPending || !content.trim() || !email.trim() || content.trim().length < 50}
+            disabled={isPending || !content.trim() || !email.trim() || content.trim().length < 50 || !isValidDays}
           >
             {isPending ? 'Posting...' : 'Post'}
           </Button>

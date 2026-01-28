@@ -52,12 +52,15 @@ export const passwordSchema = z.string()
 export const userTypeSchema = z.enum(['human', 'organization', 'admin'])
   .default('human');
 
+export const idSchema = z.uuid('Invalid user ID')
+
 // ============================================================================
 // REQUEST BODY SCHEMAS
 // ============================================================================
 
 // Signup request schema
 export const signupSchema = z.object({
+  id: idSchema,
   name: nameSchema,
   email: emailSchema,
   password: passwordSchema,
@@ -76,7 +79,7 @@ export const loginSchema = z.object({
 
 // Database user schema (includes passwordHash)
 export const dbAuthUserSchema = z.object({
-  id: z.number(),
+  id: z.uuid(),
   name: z.string(),
   email: z.string(),
   type: z.string(),
@@ -86,7 +89,7 @@ export const dbAuthUserSchema = z.object({
 
 // API user schema (excludes passwordHash)
 export const apiAuthUserSchema = z.object({
-  id: z.number(),
+  id: z.uuid(),
   name: z.string(),
   email: z.string(),
   type: z.string(),
@@ -95,7 +98,7 @@ export const apiAuthUserSchema = z.object({
 
 // JWT payload schema
 export const jwtPayloadSchema = z.object({
-  userId: z.number(),
+  userId: z.uuid(),
   email: z.string(),
   type: z.string()
 });

@@ -1,4 +1,3 @@
-// This file should be placed at: schemas/demand.ts
 import { z } from 'zod';
 
 export const sanitizeInput = (input: string): string => {
@@ -24,9 +23,14 @@ export const phoneSchema = z.string()
   .trim()
   .transform(sanitizeInput);
 
-export const demandIdSchema = z.coerce.number().int().positive('Invalid demand ID');
+export const daysSchema = z.coerce.number()
+  .int('Days must be a whole number')
+  .min(1, 'Duration must be at least 1 day')
+  .max(180, 'Duration cannot exceed 180 days');
 
-export const userIdSchema = z.coerce.number().int().positive('Invalid user ID');
+export const demandIdSchema = z.uuid('Invalid demand ID');
+
+export const userIdSchema = z.uuid('Invalid user ID')
 
 export const searchQuerySchema = z.string()
   .min(30, 'Search query must be at least 30 characters')
@@ -35,20 +39,22 @@ export const searchQuerySchema = z.string()
   .transform(sanitizeInput);
 
 export const demandSchema = z.object({
-  id: z.number(),
-  userId: z.number(),
+  id: z.uuid(),
+  userId: z.uuid(),
   content: z.string(),
   schema: z.string(), // JSON string stored as TEXT in SQLite
   email: z.string(),
   phone: z.string(),
-  createdAt: z.number()
+  createdAt: z.number(),
+  endingAt: z.number()
 });
 
 export const createDemandSchema = z.object({
   content: demandContentSchema,
   email: emailSchema,
   phone: phoneSchema.optional(),
-  userId: userIdSchema
+  userId: userIdSchema,
+  days: daysSchema
 });
 
 export type Demand = z.infer<typeof demandSchema>;
