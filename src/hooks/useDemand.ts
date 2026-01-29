@@ -1,4 +1,4 @@
-import type { CreateDemandInput, Demand, DemandWithScore } from "@/utils/types";
+import type { CreateDemandInput, Demand, RateLimitInfo, SearchResponse } from "@/utils/types";
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // ===== API FUNCTIONS ======
@@ -14,11 +14,21 @@ export const createDemand = async (input: CreateDemandInput): Promise<Demand> =>
   return data.demand;
 };
 
-export const searchDemand = async (query: string): Promise<DemandWithScore[]> => {
-  const res = await fetch(`/api/demand/search?q=${encodeURIComponent(query)}`);
-  if (!res.ok) throw new Error('Failed to search demand');
+export const searchDemand = async (query: string, userId: string): Promise<SearchResponse> => {
+  const res = await fetch(`/api/demand/search?q=${encodeURIComponent(query)}&userId=${userId}`);
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Failed to search demand');
+  }
   const data = await res.json();
-  return data.demand;
+  return data;
+};
+
+export const fetchRateLimitStatus = async (userId: string): Promise<RateLimitInfo> => {
+  const res = await fetch(`/api/demand/search/limit?userId=${userId}`);
+  if (!res.ok) throw new Error('Failed to fetch rate limit status');
+  const data = await res.json();
+  return data;
 };
 
 export const fetchDemandById = async (demandId: string, userId?: string): Promise<{ demand: Demand, hasApplied: boolean }> => {
@@ -56,13 +66,22 @@ export const demandByUserIdQueryOptions = (userId: string) =>
     gcTime: 10 * 60 * 1000,
   });
 
-export const searchDemandQueryOptions = (query: string) =>
+export const searchDemandQueryOptions = (query: string, userId: string) =>
   queryOptions({
-    queryKey: ['demand', 'search', query],
-    queryFn: () => searchDemand(query),
+    queryKey: ['demand', 'search', query, userId],
+    queryFn: () => searchDemand(query, userId),
     staleTime: 5 * 60 * 1000, // 5 minutes - keep results fresh while navigating
     gcTime: 10 * 60 * 1000, // 10 minutes - keep in cache even when unmounted
-    enabled: !!query && query.length >= 30, // Only search if query is 30+ chars
+    enabled: !!query && query.length >= 30 && !!userId, // Only search if query is 30+ chars and userId exists
+  });
+
+export const rateLimitStatusQueryOptions = (userId: string) =>
+  queryOptions({
+    queryKey: ['rateLimit', 'status', userId],
+    queryFn: () => fetchRateLimitStatus(userId),
+    staleTime: 1 * 60 * 1000, // 1 minute
+    gcTime: 5 * 60 * 1000,
+    enabled: !!userId,
   });
 
 // ===== MUTATIONS =====

@@ -166,18 +166,22 @@ function RouteComponent() {
               {hasApplied && (
                 <div className='p-2 border-primary border-b space-y-1'>
                   <p className='text-sm'>Contact Information (visible because you applied)</p>
-                  <div className='flex gap-2 items-center text-sm'>
-                    <Mail size={14} />
-                    <a href={`mailto:${demand.email}`} className='hover:underline'>
-                      {demand.email}
-                    </a>
-                  </div>
-                  <div className='flex gap-2 items-center text-sm'>
-                    <Phone size={14} />
-                    <a href={`tel:${demand.phone}`} className='hover:underline'>
-                      {demand.phone}
-                    </a>
-                  </div>
+                  {demand.email && (
+                    <div className='flex gap-1 items-center text-sm'>
+                      <span>Email:</span>
+                      <a href={`mailto:${demand.email}`} className='hover:underline'>
+                        {demand.email}
+                      </a>
+                    </div>
+                  )}
+                  {demand.phone && (
+                    <div className='flex gap-1 items-center text-sm'>
+                      <span>Phone:</span>
+                      <a href={`tel:${demand.phone}`} className='hover:underline'>
+                        {demand.phone}
+                      </a>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

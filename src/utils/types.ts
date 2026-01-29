@@ -78,6 +78,18 @@ export interface DemandWithSupplyDetails {
   appliedAt: number;
 };
 
+export interface RateLimitInfo {
+  remaining: number;
+  total: number;
+  resetAt: string;
+}
+
+export interface SearchResponse {
+  demand: DemandWithScore[];
+  count: number;
+  rateLimit: RateLimitInfo;
+}
+
 // ===== SUPPLY =====
 
 export interface Supply {

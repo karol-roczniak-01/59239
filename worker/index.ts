@@ -1,4 +1,4 @@
-import { Ai, D1Database, VectorizeIndex } from '@cloudflare/workers-types';
+import { Ai, D1Database, VectorizeIndex, type KVNamespace } from '@cloudflare/workers-types';
 import { Hono } from 'hono';
 import auth from './routes/auth';
 import users from './routes/users';
@@ -10,6 +10,7 @@ export type Env = {
   DB: D1Database;
   AI: Ai;
   VECTORIZE: VectorizeIndex;
+  RATE_LIMIT: KVNamespace;
   JWT_SECRET_KEY: string;
   STRIPE_SECRET_KEY: string;
 };

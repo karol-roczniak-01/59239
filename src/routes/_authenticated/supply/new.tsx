@@ -4,10 +4,11 @@ import { Button } from '@/components/Button'
 import Layout from '@/components/Layout'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { LoaderIcon } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
-import { searchDemandQueryOptions } from '@/hooks/useDemand'
-import { useState } from 'react'
+import { searchDemandQueryOptions, rateLimitStatusQueryOptions } from '@/hooks/useDemand'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/routes/-auth'
 
 const searchSchema = z.object({
   q: z.string().optional().default(''),
@@ -20,18 +21,46 @@ export const Route = createFileRoute('/_authenticated/supply/new')({
 
 function RouteComponent() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { q: urlSearchQuery } = Route.useSearch()
+  const { user } = useAuth() 
   
   // Local state for the textarea
   const [searchInput, setSearchInput] = useState(urlSearchQuery)
+  const [rateLimitError, setRateLimitError] = useState<string | null>(null)
+
+  // Fetch rate limit status
+  const { data: rateLimitStatus } = useQuery(
+    rateLimitStatusQueryOptions(user?.id || '')
+  )
 
   // Use the URL search query for the actual API call
-  const { data: results, isLoading, error, isFetching } = useQuery(
-    searchDemandQueryOptions(urlSearchQuery)
+  const { data: searchResponse, isLoading, error, isFetching } = useQuery(
+    searchDemandQueryOptions(urlSearchQuery, user?.id || '')
   )
+
+  // Update rate limit status after search
+  useEffect(() => {
+    if (searchResponse?.rateLimit) {
+      queryClient.setQueryData(
+        ['rateLimit', 'status', user?.id],
+        searchResponse.rateLimit
+      )
+    }
+  }, [searchResponse, queryClient, user?.id])
+
+  // Check for rate limit errors
+  useEffect(() => {
+    if (error?.message.includes('Daily search limit reached')) {
+      setRateLimitError(error.message)
+    } else {
+      setRateLimitError(null)
+    }
+  }, [error])
 
   const handleSearch = () => {
     if (searchInput.trim().length >= 30) {
+      setRateLimitError(null)
       navigate({ 
         to: '.',
         search: { q: searchInput.trim() },
@@ -48,7 +77,10 @@ function RouteComponent() {
   }
 
   // Filter out results where demand is null/undefined
-  const validResults = results?.filter(result => result.demand != null) || [];
+  const validResults = searchResponse?.demand?.filter(result => result.demand != null) || [];
+
+  const currentRateLimit = searchResponse?.rateLimit || rateLimitStatus || { remaining: 10, total: 10, resetAt: '' }
+  const isLimitReached = currentRateLimit.remaining === 0
 
   return (
     <Layout>
@@ -63,15 +95,25 @@ function RouteComponent() {
             rows={4}
             className='resize-none'
           />
-          <p className='text-xs text-muted-foreground'>
-            {searchInput.trim().length}/30 characters minimum
-          </p>
+          <div className='flex justify-between items-center text-xs'>
+            <p className='text-muted-foreground'>
+              {searchInput.trim().length}/30 characters minimum
+            </p>
+            <p className={`font-medium ${isLimitReached ? 'text-red-500' : 'text-muted-foreground'}`}>
+              {currentRateLimit.remaining}/{currentRateLimit.total} searches remaining today
+            </p>
+          </div>
+          {rateLimitError && (
+            <p className='text-xs text-red-500'>
+              {rateLimitError} Resets at {new Date(currentRateLimit.resetAt).toLocaleTimeString()}
+            </p>
+          )}
           <Button 
             onClick={handleSearch}
-            disabled={searchInput.trim().length < 30 || isLoading || isFetching}
+            disabled={searchInput.trim().length < 30 || isLoading || isFetching || isLimitReached}
             className='w-full shrink-0'
           >
-            {isLoading || isFetching ? 'Searching...' : 'Search'}
+            {isLoading || isFetching ? 'Searching...' : isLimitReached ? 'Daily limit reached' : 'Search'}
           </Button>
         </CardHeader>
       
@@ -81,6 +123,8 @@ function RouteComponent() {
             <div className='h-full w-full flex items-center justify-center'>
               <LoaderIcon className='shrink-0 animate-spin' size={16} />
             </div>
+          ) : rateLimitError ? (
+            <p className='text-primary/70'>{rateLimitError}</p>
           ) : error ? (
             <p className='text-primary/70'>Error: {error.message}</p>
           ) : !urlSearchQuery || urlSearchQuery.length < 30 ? (
