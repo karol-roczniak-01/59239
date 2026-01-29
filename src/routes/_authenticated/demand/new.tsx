@@ -20,13 +20,18 @@ function RouteComponent() {
   const navigate = useNavigate()
   const { mutate: createDemand, isPending, error } = useCreateDemand()
 
+  const daysNum = parseInt(days) || 0;
+  const trimmedContent = content.trim();
+  const trimmedEmail = email.trim();
+  const isValidDays = daysNum >= 1 && daysNum <= 180;
+  const isValidContent = trimmedContent.length >= 50 && trimmedContent.length <= 1000;
+
   const handleSubmit = () => {
-    const daysNum = parseInt(days);
-    if (!content.trim() || !email.trim() || content.trim().length < 50 || !daysNum || daysNum < 1 || daysNum > 180) return
+    if (!trimmedContent || !trimmedEmail || !isValidContent || !isValidDays) return
     createDemand(
       { 
-        content: content.trim(),
-        email: email.trim(),
+        content: trimmedContent,
+        email: trimmedEmail,
         phone: phone.trim() || undefined,
         userId: auth.user!.id,
         days: daysNum
@@ -42,9 +47,6 @@ function RouteComponent() {
       }
     )
   }
-
-  const daysNum = parseInt(days) || 0;
-  const isValidDays = daysNum >= 1 && daysNum <= 180;
 
   return (
     <Layout>
@@ -62,7 +64,7 @@ function RouteComponent() {
             disabled={isPending}
           />
           <p className='text-xs text-muted-foreground'>
-            {content.trim().length}/50 characters minimum
+            {content.trim().length}/1000 characters (minimum 50)
           </p>
           <div className='flex gap-2 pt-2'>
             <Input
@@ -107,7 +109,7 @@ function RouteComponent() {
           <Button 
             className='w-full'
             onClick={handleSubmit}
-            disabled={isPending || !content.trim() || !email.trim() || content.trim().length < 50 || !isValidDays}
+            disabled={isPending || !trimmedContent || !trimmedEmail || !isValidContent || !isValidDays}
           >
             {isPending ? 'Posting...' : 'Post'}
           </Button>

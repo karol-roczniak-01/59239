@@ -29,6 +29,10 @@ function RouteComponent() {
   const [searchInput, setSearchInput] = useState(urlSearchQuery)
   const [rateLimitError, setRateLimitError] = useState<string | null>(null)
 
+  // Validation variables
+  const trimmedSearch = searchInput.trim();
+  const isValidSearch = trimmedSearch.length >= 30 && trimmedSearch.length <= 500;
+
   // Fetch rate limit status
   const { data: rateLimitStatus } = useQuery(
     rateLimitStatusQueryOptions(user?.id || '')
@@ -59,11 +63,11 @@ function RouteComponent() {
   }, [error])
 
   const handleSearch = () => {
-    if (searchInput.trim().length >= 30) {
+    if (isValidSearch) {
       setRateLimitError(null)
       navigate({ 
         to: '.',
-        search: { q: searchInput.trim() },
+        search: { q: trimmedSearch },
         replace: true 
       })
     }
@@ -97,7 +101,7 @@ function RouteComponent() {
           />
           <div className='flex justify-between items-center text-xs'>
             <p className='text-muted-foreground'>
-              {searchInput.trim().length}/30 characters minimum
+              {trimmedSearch.length}/500 characters (minimum 30)
             </p>
             <p className={`font-medium ${isLimitReached ? 'text-red-500' : 'text-muted-foreground'}`}>
               {currentRateLimit.remaining}/{currentRateLimit.total} searches remaining today
@@ -110,7 +114,7 @@ function RouteComponent() {
           )}
           <Button 
             onClick={handleSearch}
-            disabled={searchInput.trim().length < 30 || isLoading || isFetching || isLimitReached}
+            disabled={!isValidSearch || isLoading || isFetching || isLimitReached}
             className='w-full shrink-0'
           >
             {isLoading || isFetching ? 'Searching...' : isLimitReached ? 'Daily limit reached' : 'Search'}

@@ -1,4 +1,3 @@
-- set max characters for supply, supply-query, demand description, 
 - limit number of active demands and supplies(?)
 - take a look on ai matching. Why it works bad
 - set correct chrome colors

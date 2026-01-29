@@ -54,6 +54,10 @@ function RouteComponent() {
   const [view, setView] = useState<'details' | 'supply'>('details')
   const [showApplyDialog, setShowApplyDialog] = useState(false)
   
+  const trimmedContent = content.trim();
+  const trimmedEmail = email.trim();
+  const isValidContent = trimmedContent.length >= 30 && trimmedContent.length <= 1000;
+  
   const { mutate: createSupply, isPending, error } = useCreateSupply()
 
   // Calculate days left
@@ -61,7 +65,7 @@ function RouteComponent() {
   const daysLeft = Math.ceil(secondsLeft / 86400);
 
   const handleInitiatePayment = async () => {
-    if (!content.trim() || !email.trim() || content.trim().length < 30 || !auth.user?.id) return
+    if (!trimmedContent || !trimmedEmail || !isValidContent || !auth.user?.id) return
 
     setIsCreatingIntent(true)
     setPaymentError(null)
@@ -97,8 +101,8 @@ function RouteComponent() {
     createSupply(
       {
         demandId: demandId,
-        content: content.trim(),
-        email: email.trim(),
+        content: trimmedContent,
+        email: trimmedEmail,
         phone: phone.trim() || undefined,
         userId: auth.user!.id,
         paymentIntentId: paymentId
@@ -276,7 +280,7 @@ function RouteComponent() {
                 disabled={isPending || isCreatingIntent}
               />
               <p className='text-xs text-muted-foreground'>
-                {content.trim().length}/30 characters minimum
+                {content.trim().length}/1000 characters (minimum 30)
               </p>
               <div className='flex gap-2 mt-2'>
                 <Input
@@ -301,9 +305,9 @@ function RouteComponent() {
                 disabled={
                   isPending || 
                   isCreatingIntent || 
-                  !content.trim() || 
-                  !email.trim() || 
-                  content.trim().length < 30 ||
+                  !trimmedContent || 
+                  !trimmedEmail || 
+                  !isValidContent ||
                   !auth.user?.id
                 }
                 className='w-full'
