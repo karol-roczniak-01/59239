@@ -51,7 +51,7 @@ export function PaymentForm({ clientSecret, onSuccess, onError, disabled }: Paym
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="text-sm font-medium mb-2 block">
+        <label className="text-sm mb-2 block">
           Card Details
         </label>
         <div className="border border-primary p-2 bg-background">

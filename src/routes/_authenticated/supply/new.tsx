@@ -103,12 +103,12 @@ function RouteComponent() {
             <p className='text-muted-foreground'>
               {trimmedSearch.length}/500 characters (minimum 30)
             </p>
-            <p className={`font-medium ${isLimitReached ? 'text-red-500' : 'text-muted-foreground'}`}>
+            <p className={`f ${isLimitReached ? 'text-primary/70' : 'text-muted-foreground'}`}>
               {currentRateLimit.remaining}/{currentRateLimit.total} searches remaining today
             </p>
           </div>
           {rateLimitError && (
-            <p className='text-xs text-red-500'>
+            <p className='text-xs text-primary/70'>
               {rateLimitError} Resets at {new Date(currentRateLimit.resetAt).toLocaleTimeString()}
             </p>
           )}

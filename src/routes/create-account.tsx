@@ -82,7 +82,7 @@ function RouteComponent() {
 
           {/* Account Type */}
           <div>
-            <label className='block text-sm font-medium mb-2'>Account Type</label>
+            <label className='block text-sm mb-2'>Account Type</label>
             <form.Field name="type">
               {(field) => (
                 <div className='flex gap-2'>

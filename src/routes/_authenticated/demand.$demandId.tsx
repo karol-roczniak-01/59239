@@ -159,7 +159,7 @@ function RouteComponent() {
                 <tbody>
                   {Object.entries(schema).map(([key, value]) => (
                     <tr key={key} className='border-b border-primary'>
-                      <td className='font-medium p-2 border-r border-primary'>{key}:</td>
+                      <td className='p-2 border-r border-primary'>{key}:</td>
                       <td className='p-2'>{String(value)}</td>
                     </tr>
                   ))}

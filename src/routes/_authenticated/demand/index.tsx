@@ -64,7 +64,7 @@ function RouteComponent() {
             onClick={() => navigate({ to: "/demand/new" })}
             className='w-full'
           >
-            Create
+            New
           </Button>
         </CardFooter>
       </Card>

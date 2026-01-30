@@ -27,7 +27,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <div className="h-full w-full flex items-center justify-center overflow-hidden">
         {children}
       </div>
-      <div className="md:hidden grid grid-cols-3 border w-full">
+      <div className="md:hidden grid grid-cols-3 w-full">
         <Button 
           onClick={handleBack}
           className="border-none"

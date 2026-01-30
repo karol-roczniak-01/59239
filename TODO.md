@@ -1,3 +1,5 @@
+- add freeze option for demand to stop accepting new supply
 - limit number of active demands and supplies(?)
+- make ai guess potential deal value(?)
 - take a look on ai matching. Why it works bad
 - set correct chrome colors

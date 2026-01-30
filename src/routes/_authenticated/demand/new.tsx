@@ -96,9 +96,6 @@ function RouteComponent() {
               {isValidDays ? `Active for ${daysNum} days (max 180)` : 'Enter between 1 and 180 days'}
             </p>
           </div>
-          <p className='text-xs text-muted-foreground pt-2'>
-            Your email and phone will only be visible to users who apply to your demand
-          </p>
           {error && (
             <p className="text-primary/70">
               {error instanceof Error ? error.message : 'Failed to create demand'}
@@ -111,7 +108,7 @@ function RouteComponent() {
             onClick={handleSubmit}
             disabled={isPending || !trimmedContent || !trimmedEmail || !isValidContent || !isValidDays}
           >
-            {isPending ? 'Posting...' : 'Post'}
+            {isPending ? 'Creating...' : 'Create'}
           </Button>
         </CardFooter>
       </Card>

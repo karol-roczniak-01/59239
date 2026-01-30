@@ -72,7 +72,7 @@ function RouteComponent() {
             onClick={() => navigate({ to: "/supply/new" })}
             className='w-full'
           >
-            Supply
+            New
           </Button>
         </CardFooter>
       </Card>
