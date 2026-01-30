@@ -42,7 +42,7 @@ function RouteComponent() {
           setEmail('')
           setPhone('')
           setDays('30')
-          navigate({ to: '/' })
+          navigate({ to: '/demand' })
         },
       }
     )
@@ -52,56 +52,62 @@ function RouteComponent() {
     <Layout>
       <Card className='h-fit'>
         <CardHeader>
-          New Demand
+          Your demand is creating, please don&apos;t close it yet...
         </CardHeader>
-        <CardContent className='overflow-hidden'>
-          <Textarea 
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="I'm looking for a home for family 2+2 in Warsaw between 150000 and 200000 USD..."
-            rows={6}
-            className='resize-none'
-            disabled={isPending}
-          />
-          <p className='text-xs text-muted-foreground'>
-            {content.trim().length}/1000 characters (minimum 50)
-          </p>
-          <div className='flex gap-2 pt-2'>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
+        {isPending ? (
+          <CardContent>
+            <p></p>
+          </CardContent>
+        ) : (
+          <CardContent className='overflow-hidden'>
+            <Textarea 
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Outpatient imaging center seeking refurbished or new 1.5T MRI system. Annual volume: ~2000 scans, focus on musculoskeletal and neuro imaging. 600sq ft max. Must include FDA clearance, installation and staff training. Budget: $800K-$1M."
+              rows={6}
+              className='resize-none'
               disabled={isPending}
             />
-            <Input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+48 123 456 789 (optional)"
-              disabled={isPending}
-            />
-          </div>
-          <div className='pt-2'>
-            <Input
-              type="number"
-              value={days}
-              onChange={(e) => setDays(e.target.value)}
-              placeholder="Duration in days"
-              min="1"
-              max="180"
-              disabled={isPending}
-            />
-            <p className='text-xs text-muted-foreground pt-1'>
-              {isValidDays ? `Active for ${daysNum} days (max 180)` : 'Enter between 1 and 180 days'}
+            <p className='text-xs text-muted-foreground'>
+              {content.trim().length}/1000 characters (minimum 50)
             </p>
-          </div>
-          {error && (
-            <p className="text-primary/70">
-              {error instanceof Error ? error.message : 'Failed to create demand'}
-            </p>
-          )}
-        </CardContent>
+            <div className='flex gap-2 pt-2'>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                disabled={isPending}
+              />
+              <Input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+48 123 456 789 (optional)"
+                disabled={isPending}
+              />
+            </div>
+            <div className='pt-2'>
+              <Input
+                type="number"
+                value={days}
+                onChange={(e) => setDays(e.target.value)}
+                placeholder="Duration in days"
+                min="1"
+                max="180"
+                disabled={isPending}
+              />
+              <p className='text-xs text-muted-foreground pt-1.5'>
+                {isValidDays ? `Active for ${daysNum} days (max 180)` : 'Enter between 1 and 180 days'}
+              </p>
+            </div>
+            {error && (
+              <p className="text-primary/70">
+                {error instanceof Error ? error.message : 'Failed to create demand'}
+              </p>
+            )}
+          </CardContent>
+        )}
         <CardFooter>
           <Button 
             className='w-full'

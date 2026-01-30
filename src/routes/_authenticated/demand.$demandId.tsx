@@ -126,10 +126,6 @@ function RouteComponent() {
     setPaymentError(error)
   }
 
-  const schema = JSON.parse(demand.schema)
-
-  console.log('applied', hasApplied)
-
   return (
     <Layout>
       <Card className='h-full'>
@@ -154,25 +150,16 @@ function RouteComponent() {
         <CardContent className='p-0'>
           {view === 'details' ? (
             <div>
-              <p className='p-2'>{demand.content}</p>
-              <table className='w-full border-y border-primary text-sm'>
-                <tbody>
-                  {Object.entries(schema).map(([key, value]) => (
-                    <tr key={key} className='border-b border-primary'>
-                      <td className='p-2 border-r border-primary'>{key}:</td>
-                      <td className='p-2'>{String(value)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <p className='p-2 whitespace-pre-wrap'>{demand.content}</p>
               
               {/* Show contact info only if user has applied */}
               {hasApplied && (
-                <div className='p-2 border-primary border-b space-y-1'>
-                  <p className='text-sm'>Contact Information (visible because you applied)</p>
+                <div className='p-2 border-primary border-t space-y-1'>
+                  <p className='text-sm font-medium'>Contact Information</p>
+                  <p className='text-xs text-primary/70'>Visible because you applied</p>
                   {demand.email && (
                     <div className='flex gap-1 items-center text-sm'>
-                      <span>Email:</span>
+                      <Mail size={14} />
                       <a href={`mailto:${demand.email}`} className='hover:underline'>
                         {demand.email}
                       </a>
@@ -180,7 +167,7 @@ function RouteComponent() {
                   )}
                   {demand.phone && (
                     <div className='flex gap-1 items-center text-sm'>
-                      <span>Phone:</span>
+                      <Phone size={14} />
                       <a href={`tel:${demand.phone}`} className='hover:underline'>
                         {demand.phone}
                       </a>
@@ -203,7 +190,7 @@ function RouteComponent() {
                       <p>#{item.id.slice(0, 8)}</p>
                       <p>{new Date(item.createdAt * 1000).toLocaleDateString()}</p>
                     </div>
-                    <p>{item.content}</p>
+                    <p className='whitespace-pre-wrap'>{item.content}</p>
                     <div className={`text-sm flex gap-2 flex-wrap ${
                       item.userId === auth.user?.id ? 'opacity-90' : 'text-muted-foreground'
                     }`}>

@@ -30,7 +30,7 @@ export const daysSchema = z.coerce.number()
 
 export const demandIdSchema = z.uuid('Invalid demand ID');
 
-export const userIdSchema = z.uuid('Invalid user ID')
+export const userIdSchema = z.uuid('Invalid user ID');
 
 export const searchQuerySchema = z.string()
   .min(30, 'Search query must be at least 30 characters')
@@ -42,7 +42,6 @@ export const demandSchema = z.object({
   id: z.uuid(),
   userId: z.uuid(),
   content: z.string(),
-  schema: z.string(), // JSON string stored as TEXT in SQLite
   email: z.string(),
   phone: z.string(),
   createdAt: z.number(),

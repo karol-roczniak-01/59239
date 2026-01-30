@@ -92,7 +92,7 @@ function RouteComponent() {
         <CardHeader className='flex gap-2 flex-col'>
           <Textarea 
             autoFocus
-            placeholder="I have a 3 bedroom apartment in Warsaw for a family..."
+            placeholder="I'm an authorized distributor of refurbished Siemens & GE 1.5T MRS systems for outpatient facilities. Inventory includes musculoskeletal imaging packages All units FDA-cleared with warranty."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -125,7 +125,7 @@ function RouteComponent() {
         <CardContent>
           {(isLoading || isFetching) && urlSearchQuery.length >= 30 ? (
             <div className='h-full w-full flex items-center justify-center'>
-              <LoaderIcon className='shrink-0 animate-spin' size={16} />
+              <p>Wait...</p>
             </div>
           ) : rateLimitError ? (
             <p className='text-primary/70'>{rateLimitError}</p>

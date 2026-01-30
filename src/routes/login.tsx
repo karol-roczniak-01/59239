@@ -149,10 +149,7 @@ function RouteComponent() {
                 className='w-full'
               >
                 {isSubmitting ? (
-                  <>
-                    <LoaderIcon className='shrink-0 animate-spin mr-2' strokeWidth={1.5} size={18}/>
-                    Logging in...
-                  </>
+                  'Logging in...'
                 ) : (
                   'Login'
                 )}

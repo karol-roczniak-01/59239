@@ -109,39 +109,6 @@ const handleZodError = (error: unknown) => {
 };
 
 // ============================================================================
-// HELPER: Generate Schema from Content using AI
-// ============================================================================
-const generateSchemaFromContent = async (content: string, ai: Ai): Promise<string> => {
-  const prompt = `Extract key information from this text as JSON. Be creative and extract whatever seems relevant.
-
-Text: "${content}"
-
-Return only JSON, no explanation.`;
-
-  try {
-    const response = await ai.run('@cf/meta/llama-3-8b-instruct', {
-      messages: [
-        { role: 'system', content: 'Extract information as JSON. Return only valid JSON, no markdown.' },
-        { role: 'user', content: prompt }
-      ]
-    });
-
-    let jsonStr = response.response?.trim() || '{}';
-    jsonStr = jsonStr.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    
-    const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      jsonStr = jsonMatch[0];
-    }
-    
-    JSON.parse(jsonStr); // Validate
-    return jsonStr;
-  } catch {
-    return JSON.stringify({ content });
-  }
-};
-
-// ============================================================================
 // HELPER: Generate Vector Embedding
 // ============================================================================
 const generateEmbedding = async (text: string, ai: Ai): Promise<number[]> => {
@@ -165,12 +132,6 @@ demand.post('/api/demand', async (c) => {
     // Generate UUID for the demand
     const id = uuidv4();
 
-    // Generate schema using AI
-    const schemaJson = await generateSchemaFromContent(
-      validatedInput.content, 
-      c.env.AI
-    );
-
     // Generate embedding for semantic search
     const embedding = await generateEmbedding(validatedInput.content, c.env.AI);
 
@@ -180,8 +141,8 @@ demand.post('/api/demand', async (c) => {
 
     // Insert into D1 - use empty string if phone is not provided
     const result = await c.env.DB
-      .prepare('INSERT INTO demand (id, userId, content, schema, email, phone, createdAt, endingAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *')
-      .bind(id, validatedInput.userId, validatedInput.content, schemaJson, validatedInput.email, validatedInput.phone || '', createdAt, endingAt)
+      .prepare('INSERT INTO demand (id, userId, content, email, phone, createdAt, endingAt) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *')
+      .bind(id, validatedInput.userId, validatedInput.content, validatedInput.email, validatedInput.phone || '', createdAt, endingAt)
       .first<Demand>();
 
     if (!result) {
