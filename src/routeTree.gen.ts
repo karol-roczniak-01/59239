@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as GuideRouteImport } from './routes/guide'
 import { Route as CreateAccountRouteImport } from './routes/create-account'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
@@ -23,6 +24,11 @@ import { Route as AuthenticatedDemandDemandIdRouteImport } from './routes/_authe
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuideRoute = GuideRouteImport.update({
+  id: '/guide',
+  path: '/guide',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CreateAccountRoute = CreateAccountRouteImport.update({
@@ -76,6 +82,7 @@ const AuthenticatedDemandDemandIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/create-account': typeof CreateAccountRoute
+  '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
   '/me': typeof AuthenticatedMeRoute
   '/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/create-account': typeof CreateAccountRoute
+  '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
   '/me': typeof AuthenticatedMeRoute
   '/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/create-account': typeof CreateAccountRoute
+  '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/create-account'
+    | '/guide'
     | '/login'
     | '/me'
     | '/demand/$demandId'
@@ -124,6 +134,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/create-account'
+    | '/guide'
     | '/login'
     | '/me'
     | '/demand/$demandId'
@@ -136,6 +147,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/create-account'
+    | '/guide'
     | '/login'
     | '/_authenticated/me'
     | '/_authenticated/demand/$demandId'
@@ -149,6 +161,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   CreateAccountRoute: typeof CreateAccountRoute
+  GuideRoute: typeof GuideRoute
   LoginRoute: typeof LoginRoute
 }
 
@@ -159,6 +172,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guide': {
+      id: '/guide'
+      path: '/guide'
+      fullPath: '/guide'
+      preLoaderRoute: typeof GuideRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/create-account': {
@@ -253,6 +273,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   CreateAccountRoute: CreateAccountRoute,
+  GuideRoute: GuideRoute,
   LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport

@@ -2,7 +2,7 @@ import Loader from '@/components/Loader'
 import Menu from '@/components/Menu'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
-import { User, LogOut, UserPlus, Factory, BadgeDollarSign } from 'lucide-react'
+import { User, LogOut, UserPlus, Factory, BadgeDollarSign, FileQuestion } from 'lucide-react'
 import Layout from '@/components/Layout'
 
 export const Route = createFileRoute('/')({
@@ -24,6 +24,7 @@ function RouteComponent() {
     { label: 'Demand', path: '/demand', icon: BadgeDollarSign },
     { label: 'Supply', path: '/supply', icon: Factory },
     { label: 'Me', path: '/me', icon: User },
+    { label: 'Guide', path: '/guide', icon: FileQuestion },
     { label: 'Logout', icon: LogOut, onSelect: handleLogout }
   ];
 
