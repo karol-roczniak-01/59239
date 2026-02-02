@@ -4,7 +4,7 @@ import { useAuth } from './-auth'
 import { useForm } from '@tanstack/react-form'
 import { Input } from '@/components/Input'
 import { Button } from '@/components/Button'
-import { Loader as AlertCircleIcon, AlertCircle } from 'lucide-react'
+import { AlertCircle, CircleAlertIcon } from 'lucide-react'
 import { useState } from 'react'
 import Layout from '@/components/Layout'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/Card'
@@ -143,7 +143,7 @@ function RouteComponent() {
                 />
                 {field.state.meta.errors.length > 0 && (
                   <div className='flex items-center gap-1 text-sm text-primary/70'>
-                    <AlertCircleIcon size={14} className='shrink-0' />
+                    <CircleAlertIcon size={14} className='shrink-0' />
                     <p>{field.state.meta.errors[0]}</p>
                   </div>
                 )}

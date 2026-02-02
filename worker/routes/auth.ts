@@ -66,7 +66,7 @@ const handleZodError = (error: unknown) => {
 };
 
 // ============================================================================
-// HELPER: Map DB User to API User
+// HELPER: Map MOTHER_DB User to API User
 // ============================================================================
 const mapAuthUserToApi = (user: DbAuthUser): ApiAuthUser => ({
   id: user.id,
@@ -125,7 +125,7 @@ auth.get('/api/users/check-username/:username', async (c) => {
     }
     
     // Check if username exists
-    const existing = await c.env.DB
+    const existing = await c.env.MOTHER_DB
       .prepare('SELECT id FROM users WHERE name = ?')
       .bind(username)
       .first();
@@ -152,7 +152,7 @@ auth.post('/api/users/signup', async (c) => {
     const { id, name, email, password, type: userType = 'human' } = validatedData;
 
     // Check for existing user
-    const existing = await c.env.DB
+    const existing = await c.env.MOTHER_DB
       .prepare('SELECT id FROM users WHERE email = ? OR name = ?')
       .bind(email, name)
       .first();
@@ -165,7 +165,7 @@ auth.post('/api/users/signup', async (c) => {
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
     // Insert new user with provided UUID
-    await c.env.DB
+    await c.env.MOTHER_DB
       .prepare('INSERT INTO users (id, name, email, type, passwordHash, verified) VALUES (?, ?, ?, ?, ?, ?)')
       .bind(id, name, email, userType, passwordHash, 0)
       .run();
@@ -213,7 +213,7 @@ auth.post('/api/users/login', async (c) => {
     const { email, password } = validatedData;
 
     // Get user from database
-    const user = await c.env.DB
+    const user = await c.env.MOTHER_DB
       .prepare('SELECT id, name, email, type, passwordHash, verified FROM users WHERE email = ?')
       .bind(email)
       .first<DbAuthUser>();
@@ -276,7 +276,7 @@ auth.get('/api/users/me', verifyAuth, async (c) => {
   try {
     const userPayload = c.get('user') as JwtPayload;
     
-    const user = await c.env.DB
+    const user = await c.env.MOTHER_DB
       .prepare('SELECT id, name, email, type, verified FROM users WHERE id = ?')
       .bind(userPayload.userId)
       .first<Omit<DbAuthUser, 'passwordHash'>>();

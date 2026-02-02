@@ -19,7 +19,7 @@ const handleZodError = (error: unknown) => {
 };
 
 // ============================================================================
-// HELPER: Map DB User to API User
+// HELPER: Map MOTHER_DB User to API User
 // ============================================================================
 const mapUserToApi = (user: DbUser): ApiUser => ({
   id: user.id,
@@ -40,7 +40,7 @@ users.get('/api/me/user/:userName', async (c) => {
     const validatedUserName = userNameSchema.parse(userName);
 
     // Query user by name
-    const user = await c.env.DB
+    const user = await c.env.MOTHER_DB
       .prepare('SELECT id, name, email, type, verified FROM users WHERE name = ?')
       .bind(validatedUserName)
       .first<DbUser>();
@@ -76,7 +76,7 @@ users.get('/api/users/humans/search', async (c) => {
       return c.json({ users: [] });
     }
     
-    const result = await c.env.DB
+    const result = await c.env.MOTHER_DB
       .prepare('SELECT id, name, email, type, verified FROM users WHERE name LIKE ? AND type = ? ORDER BY name LIMIT 10')
       .bind(`${validatedName}%`, 'human')
       .all();
@@ -110,7 +110,7 @@ users.get('/api/users/organizations/search', async (c) => {
       return c.json({ users: [] });
     }
     
-    const result = await c.env.DB
+    const result = await c.env.MOTHER_DB
       .prepare('SELECT id, name, email, type, verified FROM users WHERE name LIKE ? AND type = ? ORDER BY name LIMIT 10')
       .bind(`${validatedName}%`, 'organization')
       .all();
@@ -140,7 +140,7 @@ users.get('/api/users/:userId', async (c) => {
     const validatedUserId = userIdSchema.parse(userId);
 
     // Query user by ID
-    const user = await c.env.DB
+    const user = await c.env.MOTHER_DB
       .prepare('SELECT id, name, email, type, verified FROM users WHERE id = ?')
       .bind(validatedUserId)
       .first<DbUser>();

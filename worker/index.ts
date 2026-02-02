@@ -7,6 +7,7 @@ import supply from './routes/supply';
 import payment from './routes/payment';
 
 export type Env = {
+  MOTHER_DB: D1Database,
   DB: D1Database;
   AI: Ai;
   VECTORIZE: VectorizeIndex;
