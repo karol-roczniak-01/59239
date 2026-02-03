@@ -1,6 +1,0 @@
-- take a look on ai matching and ai json creating and make it better
-- display nice loading state when demand is creating
-- add freeze option for demand to stop accepting new supply
-- limit number of active demands and supplies(?)
-- make ai guess potential deal value(?)
-- set correct chrome colors

@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight, Home } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "./Button";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouter } from "@tanstack/react-router";
 
 interface LayoutProps {
   children: ReactNode;
@@ -9,13 +9,20 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigate = useNavigate();
+  const router = useRouter();
   
-  const handleBack = () => {
-    window.history.back();
+  const handleBack = (e: React.MouseEvent<HTMLDivElement> | React.MouseEvent<HTMLButtonElement>) => {
+    // Only trigger if clicking directly on the container, not on children
+    if (e.target !== e.currentTarget) return;
+    
+    // Check if we're not at the root path
+    if (router.state.location.pathname !== '/') {
+      router.history.back();
+    }
   };
 
   const handleForward = () => {
-    window.history.forward();
+    router.history.forward();
   };
 
   const handleHome = () => {
@@ -24,7 +31,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="h-dvh relative w-full flex flex-col gap-4 items-center justify-center p-2 overflow-hidden">
-      <div className="h-full w-full flex items-center justify-center overflow-hidden">
+      <div 
+        className="h-full w-full flex items-center justify-center overflow-hidden"
+        onClick={handleBack}
+      >
         {children}
       </div>
       <div className="md:hidden grid grid-cols-3 w-full">

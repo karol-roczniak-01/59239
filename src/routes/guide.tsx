@@ -45,7 +45,7 @@ function RouteComponent() {
               You can open it to see current applications with contact details.
             </p>
           </div>
-          <div className='flex flex-col gap-2 border-b pb-4'>
+          <div className='flex flex-col gap-2 pb-4'>
             <h1>
               I Want to Sell Something
             </h1>
