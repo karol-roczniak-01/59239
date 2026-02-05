@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
-import { searchQuerySchema, userNameSchema, userIdSchema, type ApiUser, type DbUser } from '../schemas/usersSchema';
+import { searchQuerySchema, usernameSchema, userIdSchema, type ApiUser, type DbUser } from '../schemas/usersSchema';
 import type { Env } from '..';
 
 const users = new Hono<{ Bindings: Env }>();
@@ -23,26 +23,26 @@ const handleZodError = (error: unknown) => {
 // ============================================================================
 const mapUserToApi = (user: DbUser): ApiUser => ({
   id: user.id,
-  name: user.name,
+  username: user.username,
+  fullName: user.fullName,
   email: user.email,
-  type: user.type,
   verified: user.verified
 });
 
 // ============================================================================
 // GET USER BY USERNAME (Public)
 // ============================================================================
-users.get('/api/me/user/:userName', async (c) => {
+users.get('/api/me/user/:username', async (c) => {
   try {
-    const userName = c.req.param('userName');
+    const username = c.req.param('username');
 
     // Validate and sanitize username with Zod
-    const validatedUserName = userNameSchema.parse(userName);
+    const validatedUsername = usernameSchema.parse(username);
 
-    // Query user by name
+    // Query user by username
     const user = await c.env.MOTHER_DB
-      .prepare('SELECT id, name, email, type, verified FROM users WHERE name = ?')
-      .bind(validatedUserName)
+      .prepare('SELECT id, username, fullName, email, verified FROM users WHERE username = ?')
+      .bind(validatedUsername)
       .first<DbUser>();
 
     if (!user) {
@@ -62,23 +62,23 @@ users.get('/api/me/user/:userName', async (c) => {
 });
 
 // ============================================================================
-// SEARCH HUMANS BY NAME
+// SEARCH USERS BY USERNAME
 // ============================================================================
-users.get('/api/users/humans/search', async (c) => {
+users.get('/api/users/search', async (c) => {
   try {
-    const name = c.req.query('name');
+    const username = c.req.query('username');
     
     // Validate and sanitize search query
-    const validatedName = searchQuerySchema.parse(name || '');
+    const validatedUsername = searchQuerySchema.parse(username || '');
 
     // Return empty array if search query is empty
-    if (validatedName.length === 0) {
+    if (validatedUsername.length === 0) {
       return c.json({ users: [] });
     }
     
     const result = await c.env.MOTHER_DB
-      .prepare('SELECT id, name, email, type, verified FROM users WHERE name LIKE ? AND type = ? ORDER BY name LIMIT 10')
-      .bind(`${validatedName}%`, 'human')
+      .prepare('SELECT id, username, fullName, email, verified FROM users WHERE username LIKE ? ORDER BY username LIMIT 10')
+      .bind(`${validatedUsername}%`)
       .all();
 
     return c.json({ 
@@ -90,41 +90,7 @@ users.get('/api/users/humans/search', async (c) => {
       return c.json({ error: zodError.error }, zodError.status);
     }
     
-    console.error('[Search Humans] Error:', error);
-    return c.json({ error: 'Failed to search users' }, 500);
-  }
-});
-
-// ============================================================================
-// SEARCH ORGANIZATIONS BY NAME
-// ============================================================================
-users.get('/api/users/organizations/search', async (c) => {
-  try {
-    const name = c.req.query('name');
-    
-    // Validate and sanitize search query
-    const validatedName = searchQuerySchema.parse(name || '');
-
-    // Return empty array if search query is empty
-    if (validatedName.length === 0) {
-      return c.json({ users: [] });
-    }
-    
-    const result = await c.env.MOTHER_DB
-      .prepare('SELECT id, name, email, type, verified FROM users WHERE name LIKE ? AND type = ? ORDER BY name LIMIT 10')
-      .bind(`${validatedName}%`, 'organization')
-      .all();
-
-    return c.json({ 
-      users: result.results.map((user) => mapUserToApi(user as DbUser))
-    });
-  } catch (error) {
-    const zodError = handleZodError(error);
-    if (zodError) {
-      return c.json({ error: zodError.error }, zodError.status);
-    }
-    
-    console.error('[Search Organizations] Error:', error);
+    console.error('[Search Users] Error:', error);
     return c.json({ error: 'Failed to search users' }, 500);
   }
 });
@@ -141,7 +107,7 @@ users.get('/api/users/:userId', async (c) => {
 
     // Query user by ID
     const user = await c.env.MOTHER_DB
-      .prepare('SELECT id, name, email, type, verified FROM users WHERE id = ?')
+      .prepare('SELECT id, username, fullName, email, verified FROM users WHERE id = ?')
       .bind(validatedUserId)
       .first<DbUser>();
 

@@ -14,19 +14,27 @@ export const sanitizeInput = (input: string): string => {
 // VALIDATION SCHEMAS
 // ============================================================================
 
-// Name schema - validates and sanitizes
-export const nameSchema = z.string()
-  .min(1, 'Name is required')
-  .max(100, 'Name is too long')
+// Username schema - validates and sanitizes
+export const usernameSchema = z.string()
+  .min(1, 'Username is required')
+  .max(100, 'Username is too long')
   .trim()
   .transform(sanitizeInput)
   .refine(
     (val) => /^[a-zA-Z0-9_-]+$/.test(val),
-    { message: 'Name can only contain letters, numbers, underscores, and hyphens' }
+    { message: 'Username can only contain letters, numbers, underscores, and hyphens' }
   );
 
+// Full name schema - validates and sanitizes
+export const fullNameSchema = z.string()
+  .min(1, 'Full name is required')
+  .max(200, 'Full name is too long')
+  .trim()
+  .transform(sanitizeInput);
+
 // Email schema
-export const emailSchema = z.email()
+export const emailSchema = z.string()
+  .email('Invalid email format')
   .min(1, 'Email is required')
   .trim()
   .transform((val) => val.toLowerCase());
@@ -48,11 +56,7 @@ export const passwordSchema = z.string()
     { message: 'Password must contain at least one number' }
   );
 
-// User type schema
-export const userTypeSchema = z.enum(['human', 'organization', 'admin'])
-  .default('human');
-
-export const idSchema = z.uuid('Invalid user ID')
+export const idSchema = z.string().uuid('Invalid user ID');
 
 // ============================================================================
 // REQUEST BODY SCHEMAS
@@ -61,10 +65,10 @@ export const idSchema = z.uuid('Invalid user ID')
 // Signup request schema
 export const signupSchema = z.object({
   id: idSchema,
-  name: nameSchema,
+  username: usernameSchema,
+  fullName: fullNameSchema,
   email: emailSchema,
   password: passwordSchema,
-  type: userTypeSchema.optional()
 });
 
 // Login request schema
@@ -80,9 +84,9 @@ export const loginSchema = z.object({
 // Database user schema (includes passwordHash)
 export const dbAuthUserSchema = z.object({
   id: z.uuid(),
-  name: z.string(),
+  username: z.string(),
+  fullName: z.string(),
   email: z.string(),
-  type: z.string(),
   passwordHash: z.string(),
   verified: z.number()
 });
@@ -90,9 +94,9 @@ export const dbAuthUserSchema = z.object({
 // API user schema (excludes passwordHash)
 export const apiAuthUserSchema = z.object({
   id: z.uuid(),
-  name: z.string(),
+  username: z.string(),
+  fullName: z.string(),
   email: z.string(),
-  type: z.string(),
   verified: z.boolean()
 });
 
@@ -100,7 +104,8 @@ export const apiAuthUserSchema = z.object({
 export const jwtPayloadSchema = z.object({
   userId: z.uuid(),
   email: z.string(),
-  type: z.string()
+  iat: z.number().optional(),
+  exp: z.number().optional()
 });
 
 // ============================================================================

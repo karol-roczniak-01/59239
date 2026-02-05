@@ -125,7 +125,7 @@ function RouteComponent() {
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="*********"
                 />
                 {field.state.meta.errors.length > 0 && (
                   <div className='flex items-center gap-1 text-sm text-primary/70'>

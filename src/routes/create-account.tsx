@@ -39,8 +39,8 @@ function RouteComponent() {
 
   const form = useForm({
     defaultValues: {
-      type: 'human',
-      name: '',
+      username: '',
+      fullName: '',
       email: '',
       password: '',
       confirmPassword: ''
@@ -49,7 +49,7 @@ function RouteComponent() {
       try {
         setApiError('');
         const id = generateUUID();
-        await signup(id, value.name, value.email, value.password, value.type);
+        await signup(id, value.username, value.fullName, value.email, value.password);
         navigate({ to: '/' });
       } catch (err) {
         setApiError(err instanceof Error ? err.message : 'Signup failed');
@@ -80,48 +80,15 @@ function RouteComponent() {
             </div>
           )}
 
-          {/* Account Type */}
-          <div>
-            <label className='block text-sm mb-2'>Account Type</label>
-            <form.Field name="type">
-              {(field) => (
-                <div className='flex gap-2'>
-                  <label className='flex gap-2 items-center cursor-pointer'>
-                    <input
-                      type="radio"
-                      name={field.name}
-                      value="human"
-                      checked={field.state.value === 'human'}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      className="h-4 w-4 appearance-none border border-primary rounded-full checked:bg-primary hover:checked:bg-primary checked:border-primary hover:border-primary outline-none"
-                    />
-                    <span>Human</span>
-                  </label>
-                  <label className='flex gap-2 items-center cursor-pointer'>
-                    <input
-                      type="radio"
-                      name={field.name}
-                      value="organization"
-                      checked={field.state.value === 'organization'}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      className="h-4 w-4 appearance-none border border-primary rounded-full checked:bg-primary hover:checked:bg-primary checked:border-primary hover:border-primary outline-none"
-                    />
-                    <span>Organization</span>
-                  </label>
-                </div>
-              )}
-            </form.Field>
-          </div>
-
           {/* Username */}
           <form.Field
-            name="name"
+            name="username"
             validators={{
               onChange: ({ value }) => {
-                if (!value) return 'Name is required';
-                if (value.length < 3) return 'Name must be at least 3 characters';
+                if (!value) return 'Username is required';
+                if (value.length < 3) return 'Username must be at least 3 characters';
                 if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
-                  return 'Name can only contain letters, numbers, underscores, and hyphens';
+                  return 'Username can only contain letters, numbers, underscores, and hyphens';
                 }
                 return undefined;
               },
@@ -130,7 +97,7 @@ function RouteComponent() {
             {(field) => (
               <div className='space-y-1'>
                 <label htmlFor={field.name} className='block text-sm'>
-                  Username
+                  Username (unique)
                 </label>
                 <Input
                   id={field.name}
@@ -139,7 +106,42 @@ function RouteComponent() {
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="username"
+                  placeholder="johndoe1"
+                />
+                {field.state.meta.errors.length > 0 && (
+                  <div className='flex items-center gap-1 text-sm text-primary/70'>
+                    <CircleAlertIcon size={14} className='shrink-0' />
+                    <p>{field.state.meta.errors[0]}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </form.Field>
+
+          {/* Full Name */}
+          <form.Field
+            name="fullName"
+            validators={{
+              onChange: ({ value }) => {
+                if (!value) return 'Full name is required';
+                if (value.length < 2) return 'Full name must be at least 2 characters';
+                return undefined;
+              },
+            }}
+          >
+            {(field) => (
+              <div className='space-y-1'>
+                <label htmlFor={field.name} className='block text-sm'>
+                  Full Name
+                </label>
+                <Input
+                  id={field.name}
+                  name={field.name}
+                  type="text"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="John Doe"
                 />
                 {field.state.meta.errors.length > 0 && (
                   <div className='flex items-center gap-1 text-sm text-primary/70'>

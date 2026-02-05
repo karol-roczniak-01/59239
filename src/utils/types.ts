@@ -7,10 +7,10 @@ export interface LoginCredentials {
 
 export interface SignupData {
   id: string; // UUID
-  name: string;
+  username: string;
+  fullName: string;
   email: string;
   password: string;
-  type: string;
 }
 
 export interface UsernameAvailability {
@@ -21,7 +21,7 @@ export interface UsernameAvailability {
 export interface AuthContext {
   user: User | null
   login: (email: string, password: string) => Promise<void>
-  signup: (id: string, name: string, email: string, password: string, type: string) => Promise<void>
+  signup: (id: string, username: string, fullName: string, email: string, password: string) => Promise<void>
   logout: () => void
   isLoading: boolean
 }
@@ -30,9 +30,9 @@ export interface AuthContext {
 
 export interface User {
   id: string // UUID
-  name: string
+  username: string
+  fullName: string
   email: string
-  type: string
   verified: boolean
 }
 

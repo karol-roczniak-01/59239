@@ -31,8 +31,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.location.href = '/'
   }
 
-  const signup = async (id: string, name: string, email: string, password: string, type: string) => {
-    const signupData: SignupData = { id, name, email, password, type }
+  const signup = async (id: string, username: string, fullName: string, email: string, password: string) => {
+    const signupData: SignupData = { id, username, fullName, email, password }
     const user = await signupUser(signupData)
     setUser(user)
     // Force a full page reload to ensure all route loaders run with new auth state

@@ -70,9 +70,9 @@ const handleZodError = (error: unknown) => {
 // ============================================================================
 const mapAuthUserToApi = (user: DbAuthUser): ApiAuthUser => ({
   id: user.id,
-  name: user.name,
+  username: user.username,
+  fullName: user.fullName,
   email: user.email,
-  type: user.type,
   verified: user.verified === 1
 });
 
@@ -126,7 +126,7 @@ auth.get('/api/users/check-username/:username', async (c) => {
     
     // Check if username exists
     const existing = await c.env.MOTHER_DB
-      .prepare('SELECT id FROM users WHERE name = ?')
+      .prepare('SELECT id FROM users WHERE username = ?')
       .bind(username)
       .first();
     
@@ -149,12 +149,12 @@ auth.post('/api/users/signup', async (c) => {
 
     // Validate and sanitize with Zod
     const validatedData = signupSchema.parse(body);
-    const { id, name, email, password, type: userType = 'human' } = validatedData;
+    const { id, username, fullName, email, password } = validatedData;
 
     // Check for existing user
     const existing = await c.env.MOTHER_DB
-      .prepare('SELECT id FROM users WHERE email = ? OR name = ?')
-      .bind(email, name)
+      .prepare('SELECT id FROM users WHERE email = ? OR username = ?')
+      .bind(email, username)
       .first();
 
     if (existing) {
@@ -166,13 +166,13 @@ auth.post('/api/users/signup', async (c) => {
 
     // Insert new user with provided UUID
     await c.env.MOTHER_DB
-      .prepare('INSERT INTO users (id, name, email, type, passwordHash, verified) VALUES (?, ?, ?, ?, ?, ?)')
-      .bind(id, name, email, userType, passwordHash, 0)
+      .prepare('INSERT INTO users (id, username, fullName, email, passwordHash, verified) VALUES (?, ?, ?, ?, ?, ?)')
+      .bind(id, username, fullName, email, passwordHash, 0)
       .run();
 
     // Create JWT token
     const jwtSecret = new TextEncoder().encode(c.env.JWT_SECRET_KEY);
-    const token = await new SignJWT({ userId: id, email, type: userType })
+    const token = await new SignJWT({ userId: id, email })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
       .setExpirationTime(JWT_EXPIRATION)
@@ -183,7 +183,7 @@ auth.post('/api/users/signup', async (c) => {
 
     return c.json({
       message: 'Account created successfully',
-      user: { id, name, email, type: userType, verified: false }
+      user: { id, username, fullName, email, verified: false }
     }, 201);
   } catch (error) {
     const zodError = handleZodError(error);
@@ -214,7 +214,7 @@ auth.post('/api/users/login', async (c) => {
 
     // Get user from database
     const user = await c.env.MOTHER_DB
-      .prepare('SELECT id, name, email, type, passwordHash, verified FROM users WHERE email = ?')
+      .prepare('SELECT id, username, fullName, email, passwordHash, verified FROM users WHERE email = ?')
       .bind(email)
       .first<DbAuthUser>();
 
@@ -231,7 +231,7 @@ auth.post('/api/users/login', async (c) => {
 
     // Create JWT token
     const jwtSecret = new TextEncoder().encode(c.env.JWT_SECRET_KEY);
-    const token = await new SignJWT({ userId: user.id, email: user.email, type: user.type })
+    const token = await new SignJWT({ userId: user.id, email: user.email })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
       .setExpirationTime(JWT_EXPIRATION)
@@ -277,7 +277,7 @@ auth.get('/api/users/me', verifyAuth, async (c) => {
     const userPayload = c.get('user') as JwtPayload;
     
     const user = await c.env.MOTHER_DB
-      .prepare('SELECT id, name, email, type, verified FROM users WHERE id = ?')
+      .prepare('SELECT id, username, fullName, email, verified FROM users WHERE id = ?')
       .bind(userPayload.userId)
       .first<Omit<DbAuthUser, 'passwordHash'>>();
 
@@ -288,9 +288,9 @@ auth.get('/api/users/me', verifyAuth, async (c) => {
     return c.json({ 
       user: {
         id: user.id,
-        name: user.name,
+        username: user.username,
+        fullName: user.fullName,
         email: user.email,
-        type: user.type,
         verified: user.verified === 1
       }
     });
