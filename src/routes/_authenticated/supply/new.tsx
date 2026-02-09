@@ -89,6 +89,7 @@ function RouteComponent() {
     <Layout>
       <Card className='h-full md:w-md'>
         <CardHeader className='flex gap-2 flex-col'>
+          <p>New Supply</p>
           <Textarea 
             autoFocus
             placeholder="I'm an authorized distributor of refurbished Siemens & GE 1.5T MRS systems for outpatient facilities. Inventory includes musculoskeletal imaging packages All units FDA-cleared with warranty."
