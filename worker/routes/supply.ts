@@ -26,6 +26,34 @@ const handleZodError = (error: unknown) => {
 };
 
 // ============================================================================
+// HELPER: Verify User Exists in MOTHER_DB
+// ============================================================================
+const verifyUserExists = async (userId: string, env: Env): Promise<boolean> => {
+  const user = await env.MOTHER_DB
+    .prepare('SELECT id FROM users WHERE id = ?')
+    .bind(userId)
+    .first();
+  
+  return !!user;
+};
+
+// ============================================================================
+// HELPER: Verify Demand Exists in DB
+// ============================================================================
+const verifyDemandExists = async (demandId: string, env: Env): Promise<{ exists: boolean; endingAt?: number }> => {
+  const demand = await env.DB
+    .prepare('SELECT id, endingAt FROM demand WHERE id = ?')
+    .bind(demandId)
+    .first<{ id: string; endingAt: number }>();
+  
+  if (!demand) {
+    return { exists: false };
+  }
+  
+  return { exists: true, endingAt: demand.endingAt };
+};
+
+// ============================================================================
 // CREATE SUPPLY (Authenticated + Payment Required)
 // ============================================================================
 const createSupplyWithPaymentSchema = createSupplySchema.extend({
@@ -39,19 +67,23 @@ supply.post('/api/supply', async (c) => {
     // Validate input (now includes paymentIntentId, phone is optional)
     const validatedInput = createSupplyWithPaymentSchema.parse(body);
 
-    // Check if demand exists and is not expired
-    const demand = await c.env.DB
-      .prepare('SELECT id, endingAt FROM demand WHERE id = ?')
-      .bind(validatedInput.demandId)
-      .first<{ id: string; endingAt: number }>();
+    // Verify user exists in MOTHER_DB
+    const userExists = await verifyUserExists(validatedInput.userId, c.env);
+    
+    if (!userExists) {
+      return c.json({ error: 'User not found' }, 404);
+    }
 
-    if (!demand) {
+    // Verify demand exists and get its endingAt
+    const demandCheck = await verifyDemandExists(validatedInput.demandId, c.env);
+    
+    if (!demandCheck.exists) {
       return c.json({ error: 'Demand not found' }, 404);
     }
 
     // Check if demand is expired
     const currentTime = Math.floor(Date.now() / 1000);
-    if (currentTime > demand.endingAt) {
+    if (currentTime > demandCheck.endingAt!) {
       return c.json({ error: 'This demand has expired and is no longer accepting applications' }, 400);
     }
 
@@ -146,6 +178,13 @@ supply.get('/api/supply/demand/:demandId', async (c) => {
     // Validate demand ID
     const validatedDemandId = demandIdSchema.parse(demandId);
 
+    // Verify demand exists
+    const demandCheck = await verifyDemandExists(validatedDemandId, c.env);
+    
+    if (!demandCheck.exists) {
+      return c.json({ error: 'Demand not found' }, 404);
+    }
+
     // Query supplies by demand ID
     const result = await c.env.DB
       .prepare('SELECT * FROM supply WHERE demandId = ? ORDER BY createdAt DESC')
@@ -176,6 +215,13 @@ supply.get('/api/supply/user/:userId', async (c) => {
 
     // Validate user ID
     const validatedUserId = userIdSchema.parse(userId);
+
+    // Verify user exists in MOTHER_DB
+    const userExists = await verifyUserExists(validatedUserId, c.env);
+    
+    if (!userExists) {
+      return c.json({ error: 'User not found' }, 404);
+    }
 
     // Query supplies by user ID
     const result = await c.env.DB
@@ -239,6 +285,13 @@ supply.get('/api/supply/user/:userId/demands', async (c) => {
 
     // Validate user ID
     const validatedUserId = userIdSchema.parse(userId);
+
+    // Verify user exists in MOTHER_DB
+    const userExists = await verifyUserExists(validatedUserId, c.env);
+    
+    if (!userExists) {
+      return c.json({ error: 'User not found' }, 404);
+    }
 
     // Query demands where user has supplied, including supply details
     const result = await c.env.DB

@@ -109,6 +109,18 @@ const handleZodError = (error: unknown) => {
 };
 
 // ============================================================================
+// HELPER: Verify User Exists in MOTHER_DB
+// ============================================================================
+const verifyUserExists = async (userId: string, env: Env): Promise<boolean> => {
+  const user = await env.MOTHER_DB
+    .prepare('SELECT id FROM users WHERE id = ?')
+    .bind(userId)
+    .first();
+  
+  return !!user;
+};
+
+// ============================================================================
 // HELPER: Generate Vector Embedding
 // ============================================================================
 const generateEmbedding = async (text: string, ai: Ai): Promise<number[]> => {
@@ -128,6 +140,13 @@ demand.post('/api/demand', async (c) => {
     
     // Validate input (now includes days for duration)
     const validatedInput = createDemandSchema.parse(body);
+
+    // Verify user exists in MOTHER_DB
+    const userExists = await verifyUserExists(validatedInput.userId, c.env);
+    
+    if (!userExists) {
+      return c.json({ error: 'User not found' }, 404);
+    }
 
     // Generate UUID for the demand
     const id = uuidv4();
@@ -189,6 +208,13 @@ demand.get('/api/demand/search/limit', async (c) => {
     // Validate user ID
     const validatedUserId = userIdSchema.parse(userId);
 
+    // Verify user exists in MOTHER_DB
+    const userExists = await verifyUserExists(validatedUserId, c.env);
+    
+    if (!userExists) {
+      return c.json({ error: 'User not found' }, 404);
+    }
+
     // Get rate limit status
     const status = await getRateLimitStatus(validatedUserId, c.env.RATE_LIMIT);
 
@@ -218,6 +244,13 @@ demand.get('/api/demand/search', async (c) => {
 
     // Validate user ID
     const validatedUserId = userIdSchema.parse(userId);
+    
+    // Verify user exists in MOTHER_DB
+    const userExists = await verifyUserExists(validatedUserId, c.env);
+    
+    if (!userExists) {
+      return c.json({ error: 'User not found' }, 404);
+    }
     
     // Validate search query
     const validatedQuery = searchQuerySchema.parse(query);
@@ -325,12 +358,18 @@ demand.get('/api/demand/:demandId', async (c) => {
     let hasApplied = false;
     if (requestingUserId) {
       const validatedUserId = userIdSchema.parse(requestingUserId);
-      const supply = await c.env.DB
-        .prepare('SELECT id FROM supply WHERE demandId = ? AND userId = ?')
-        .bind(validatedDemandId, validatedUserId)
-        .first();
       
-      hasApplied = !!supply;
+      // Verify requesting user exists in MOTHER_DB
+      const userExists = await verifyUserExists(validatedUserId, c.env);
+      
+      if (userExists) {
+        const supply = await c.env.DB
+          .prepare('SELECT id FROM supply WHERE demandId = ? AND userId = ?')
+          .bind(validatedDemandId, validatedUserId)
+          .first();
+        
+        hasApplied = !!supply;
+      }
     }
 
     // Check if demand is expired
@@ -365,6 +404,13 @@ demand.get('/api/demand/user/:userId', async (c) => {
 
     // Validate user ID
     const validatedUserId = userIdSchema.parse(userId);
+
+    // Verify user exists in MOTHER_DB
+    const userExists = await verifyUserExists(validatedUserId, c.env);
+    
+    if (!userExists) {
+      return c.json({ error: 'User not found' }, 404);
+    }
 
     // Query demand by user ID (include expired demands for user's own view)
     const result = await c.env.DB

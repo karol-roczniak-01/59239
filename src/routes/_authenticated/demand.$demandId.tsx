@@ -253,21 +253,22 @@ function RouteComponent() {
         }}
       >
         {!showPayment ? (
-          <Card className='bg-background md:w-md w-full'>
+          <Card className='bg-background md:w-md w-full h-1/3'>
             <CardHeader>
-              Apply for: $50.00
+              <p>Apply for: $50.00</p>
+              <p className='text-sm opacity-70'>After your application is approved, you&apos;ll receive the buyer&apos;s contact details to discuss the deal directly</p>
             </CardHeader>
             <CardContent className=''>
               <Textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="We have a beautiful 3-bedroom home in Warsaw..."
+                placeholder="Explain how you can fulfill this requirement..."
                 className='resize-none'
                 rows={4}
                 disabled={isPending || isCreatingIntent}
               />
               <p className='text-xs text-muted-foreground'>
-                {content.trim().length}/1000 characters (minimum 30)
+                {content.trim().length}/500 characters (minimum 30)
               </p>
               <div className='flex gap-2 mt-2'>
                 <Input
