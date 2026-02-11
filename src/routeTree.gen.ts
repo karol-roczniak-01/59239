@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GuideRouteImport } from './routes/guide'
 import { Route as CreateAccountRouteImport } from './routes/create-account'
@@ -21,6 +22,11 @@ import { Route as AuthenticatedSupplyNewRouteImport } from './routes/_authentica
 import { Route as AuthenticatedDemandNewRouteImport } from './routes/_authenticated/demand/new'
 import { Route as AuthenticatedDemandDemandIdRouteImport } from './routes/_authenticated/demand.$demandId'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/create-account': typeof CreateAccountRoute
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
+  '/terms': typeof TermsRoute
   '/me': typeof AuthenticatedMeRoute
   '/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
   '/demand/new': typeof AuthenticatedDemandNewRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/create-account': typeof CreateAccountRoute
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
+  '/terms': typeof TermsRoute
   '/me': typeof AuthenticatedMeRoute
   '/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
   '/demand/new': typeof AuthenticatedDemandNewRoute
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   '/create-account': typeof CreateAccountRoute
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
+  '/terms': typeof TermsRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
   '/_authenticated/demand/new': typeof AuthenticatedDemandNewRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/create-account'
     | '/guide'
     | '/login'
+    | '/terms'
     | '/me'
     | '/demand/$demandId'
     | '/demand/new'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/create-account'
     | '/guide'
     | '/login'
+    | '/terms'
     | '/me'
     | '/demand/$demandId'
     | '/demand/new'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/create-account'
     | '/guide'
     | '/login'
+    | '/terms'
     | '/_authenticated/me'
     | '/_authenticated/demand/$demandId'
     | '/_authenticated/demand/new'
@@ -163,10 +175,18 @@ export interface RootRouteChildren {
   CreateAccountRoute: typeof CreateAccountRoute
   GuideRoute: typeof GuideRoute
   LoginRoute: typeof LoginRoute
+  TermsRoute: typeof TermsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -275,6 +295,7 @@ const rootRouteChildren: RootRouteChildren = {
   CreateAccountRoute: CreateAccountRoute,
   GuideRoute: GuideRoute,
   LoginRoute: LoginRoute,
+  TermsRoute: TermsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

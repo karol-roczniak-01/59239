@@ -1,5 +1,5 @@
 import Loader from '@/components/Loader'
-import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, redirect, useNavigate, Link } from '@tanstack/react-router'
 import { useAuth } from './-auth'
 import { useForm } from '@tanstack/react-form'
 import { Input } from '@/components/Input'
@@ -43,7 +43,8 @@ function RouteComponent() {
       fullName: '',
       email: '',
       password: '',
-      confirmPassword: ''
+      confirmPassword: '',
+      acceptTerms: false
     },
     onSubmit: async ({ value }) => {
       try {
@@ -261,6 +262,44 @@ function RouteComponent() {
                 {field.state.meta.errors.length > 0 && (
                   <div className='flex items-center gap-1 text-sm text-primary/70'>
                     <AlertCircle size={14} className='shrink-0' />
+                    <p>{field.state.meta.errors[0]}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </form.Field>
+
+          {/* Accept Terms */}
+          <form.Field
+            name="acceptTerms"
+            validators={{
+              onChange: ({ value }) => {
+                if (!value) return 'You must accept the Terms of Service';
+                return undefined;
+              },
+            }}
+          >
+            {(field) => (
+              <div className='space-y-1 pt-2'>
+                <div className='flex items-start gap-2'>
+                  <input
+                    id={field.name}
+                    type="checkbox"
+                    checked={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.checked)}
+                    className='mt-1'
+                  />
+                  <label htmlFor={field.name} className='text-sm'>
+                    I agree to the{' '}
+                    <Link to="/terms" className="underline">
+                      Terms of Service
+                    </Link>
+                  </label>
+                </div>
+                {field.state.meta.errors.length > 0 && (
+                  <div className='flex items-center gap-1 text-sm text-primary/70 ml-6'>
+                    <CircleAlertIcon size={14} className='shrink-0' />
                     <p>{field.state.meta.errors[0]}</p>
                   </div>
                 )}

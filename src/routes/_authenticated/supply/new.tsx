@@ -13,6 +13,8 @@ const searchSchema = z.object({
   q: z.string().optional().default(''),
 })
 
+const STORAGE_KEY = 'supplySearchQuery'
+
 export const Route = createFileRoute('/_authenticated/supply/new')({
   validateSearch: searchSchema,
   component: RouteComponent,
@@ -25,8 +27,25 @@ function RouteComponent() {
   const { user } = useAuth() 
   
   // Local state for the textarea
-  const [searchInput, setSearchInput] = useState(urlSearchQuery)
+  const [searchInput, setSearchInput] = useState('')
   const [rateLimitError, setRateLimitError] = useState<string | null>(null)
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const savedQuery = localStorage.getItem(STORAGE_KEY)
+    if (savedQuery) {
+      setSearchInput(savedQuery)
+    } else if (urlSearchQuery) {
+      setSearchInput(urlSearchQuery)
+    }
+  }, [])
+
+  // Update localStorage when input changes
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value
+    setSearchInput(value)
+    localStorage.setItem(STORAGE_KEY, value)
+  }
 
   // Validation variables
   const trimmedSearch = searchInput.trim();
@@ -94,7 +113,7 @@ function RouteComponent() {
             autoFocus
             placeholder="I'm an authorized distributor of refurbished Siemens & GE 1.5T MRS systems for outpatient facilities. Inventory includes musculoskeletal imaging packages All units FDA-cleared with warranty."
             value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             rows={4}
             className='resize-none'
