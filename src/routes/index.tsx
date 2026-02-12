@@ -2,7 +2,7 @@ import Loader from '@/components/Loader'
 import Menu from '@/components/Menu'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
-import { User, LogOut, UserPlus, Factory, BadgeDollarSign, FileQuestion, Section } from 'lucide-react'
+import { User, LogOut, UserPlus, Factory, BadgeDollarSign, FileText } from 'lucide-react'
 import Layout from '@/components/Layout'
 
 export const Route = createFileRoute('/')({
@@ -24,14 +24,14 @@ function RouteComponent() {
     { label: 'Demand', path: '/demand', icon: BadgeDollarSign },
     { label: 'Supply', path: '/supply', icon: Factory },
     { label: 'Me', path: '/me', icon: User },
-    { label: 'Docs', path: '/docs', icon: FileQuestion },
+    { label: 'Docs', path: '/docs', icon: FileText },
     { label: 'Logout', icon: LogOut, onSelect: handleLogout }
   ];
 
   const unauthorizedOptions = [
     { label: 'Create Account', path: '/create-account', icon: UserPlus },
     { label: 'Log In', path: '/login', icon: User },
-    { label: 'Docs', path: '/docs', icon: FileQuestion },
+    { label: 'Docs', path: '/docs', icon: FileText },
   ];
 
   if (auth.isLoading) {
