@@ -41,7 +41,7 @@ function RouteComponent() {
             <h1>
               3. How It Works
             </h1>
-            <Link to="/guide" className="underline ml-4">Read guide</Link> 
+            <Link to="/docs/guide" className="underline ml-4">Read guide</Link> 
             
           </div>
 

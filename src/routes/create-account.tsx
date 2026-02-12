@@ -292,7 +292,7 @@ function RouteComponent() {
                   />
                   <label htmlFor={field.name} className='text-sm'>
                     I agree to the{' '}
-                    <Link to="/terms" className="underline">
+                    <Link to="/docs/terms" className="underline">
                       Terms of Service
                     </Link>
                   </label>
