@@ -48,7 +48,7 @@ payment.post('/api/payment/create-intent', async (c) => {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        amount: '50000', // $50.00 in cents
+        amount: '29000', // $29.00 in cents
         currency: 'usd',
         'metadata[demandId]': validated.demandId,
         'metadata[userId]': validated.userId,

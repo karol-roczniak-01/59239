@@ -50,7 +50,7 @@ function RouteComponent() {
               4. Application Fees
             </h1>
             <p className='opacity-80 ml-4'>
-              Standard application fee is $50 USD per application. Fees may be adjusted based on potential deal size. All fees are non-refundable once contact information is exchanged. Payment must be completed before contact information is released.
+              Standard application fee is $29.00 USD per application. All fees are non-refundable once contact information is exchanged. Payment must be completed before contact information is released.
             </p>
           </div>
 

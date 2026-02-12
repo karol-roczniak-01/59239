@@ -84,7 +84,7 @@ export function PaymentForm({ clientSecret, onSuccess, onError, disabled }: Paym
           disabled={!stripe || isProcessing || disabled}
           className="w-full"
         >
-          {isProcessing ? 'Processing...' : 'Pay $50.00'}
+          {isProcessing ? 'Processing...' : 'Pay $29.00'}
         </Button>
       </div>
     </form>
