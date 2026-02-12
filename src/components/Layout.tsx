@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Home } from "lucide-react";
+import { ChevronLeft, ChevronRight, Grid2X2, Home } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "./Button";
 import { useNavigate, useRouter } from "@tanstack/react-router";
@@ -29,6 +29,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     navigate({ to: "/" });
   };
 
+  const handleHub = () => {
+    window.location.href = "https://19188103.com";
+  };
+
   return (
     <div className="h-dvh relative w-full flex flex-col gap-4 items-center justify-center p-2 overflow-hidden">
       <div 
@@ -37,13 +41,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       >
         {children}
       </div>
-      <div className="md:hidden grid grid-cols-3 w-full">
+      <div className="md:hidden grid grid-cols-4 w-full">
         <Button 
           onClick={handleBack}
           className="border-none"
           aria-label="Go back"
         >
           <ChevronLeft size={16}/>
+        </Button>
+        <Button 
+          onClick={handleHub}
+          className="border-none"
+          aria-label="Go to hub"
+        >
+          <Grid2X2 size={16}/>
         </Button>
         <Button 
           onClick={handleHome}

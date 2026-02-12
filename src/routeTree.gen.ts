@@ -9,12 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TermsRouteImport } from './routes/terms'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as GuideRouteImport } from './routes/guide'
 import { Route as CreateAccountRouteImport } from './routes/create-account'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DocsIndexRouteImport } from './routes/docs/index'
+import { Route as DocsTermsRouteImport } from './routes/docs/terms'
+import { Route as DocsGuideRouteImport } from './routes/docs/guide'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedSupplyIndexRouteImport } from './routes/_authenticated/supply/index'
 import { Route as AuthenticatedDemandIndexRouteImport } from './routes/_authenticated/demand/index'
@@ -22,19 +23,9 @@ import { Route as AuthenticatedSupplyNewRouteImport } from './routes/_authentica
 import { Route as AuthenticatedDemandNewRouteImport } from './routes/_authenticated/demand/new'
 import { Route as AuthenticatedDemandDemandIdRouteImport } from './routes/_authenticated/demand.$demandId'
 
-const TermsRoute = TermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GuideRoute = GuideRouteImport.update({
-  id: '/guide',
-  path: '/guide',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CreateAccountRoute = CreateAccountRouteImport.update({
@@ -49,6 +40,21 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsIndexRoute = DocsIndexRouteImport.update({
+  id: '/docs/',
+  path: '/docs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsTermsRoute = DocsTermsRouteImport.update({
+  id: '/docs/terms',
+  path: '/docs/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsGuideRoute = DocsGuideRouteImport.update({
+  id: '/docs/guide',
+  path: '/docs/guide',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
@@ -88,10 +94,11 @@ const AuthenticatedDemandDemandIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/create-account': typeof CreateAccountRoute
-  '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
-  '/terms': typeof TermsRoute
   '/me': typeof AuthenticatedMeRoute
+  '/docs/guide': typeof DocsGuideRoute
+  '/docs/terms': typeof DocsTermsRoute
+  '/docs/': typeof DocsIndexRoute
   '/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
   '/demand/new': typeof AuthenticatedDemandNewRoute
   '/supply/new': typeof AuthenticatedSupplyNewRoute
@@ -101,10 +108,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/create-account': typeof CreateAccountRoute
-  '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
-  '/terms': typeof TermsRoute
   '/me': typeof AuthenticatedMeRoute
+  '/docs/guide': typeof DocsGuideRoute
+  '/docs/terms': typeof DocsTermsRoute
+  '/docs': typeof DocsIndexRoute
   '/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
   '/demand/new': typeof AuthenticatedDemandNewRoute
   '/supply/new': typeof AuthenticatedSupplyNewRoute
@@ -116,10 +124,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/create-account': typeof CreateAccountRoute
-  '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
-  '/terms': typeof TermsRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
+  '/docs/guide': typeof DocsGuideRoute
+  '/docs/terms': typeof DocsTermsRoute
+  '/docs/': typeof DocsIndexRoute
   '/_authenticated/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
   '/_authenticated/demand/new': typeof AuthenticatedDemandNewRoute
   '/_authenticated/supply/new': typeof AuthenticatedSupplyNewRoute
@@ -131,10 +140,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/create-account'
-    | '/guide'
     | '/login'
-    | '/terms'
     | '/me'
+    | '/docs/guide'
+    | '/docs/terms'
+    | '/docs/'
     | '/demand/$demandId'
     | '/demand/new'
     | '/supply/new'
@@ -144,10 +154,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/create-account'
-    | '/guide'
     | '/login'
-    | '/terms'
     | '/me'
+    | '/docs/guide'
+    | '/docs/terms'
+    | '/docs'
     | '/demand/$demandId'
     | '/demand/new'
     | '/supply/new'
@@ -158,10 +169,11 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/create-account'
-    | '/guide'
     | '/login'
-    | '/terms'
     | '/_authenticated/me'
+    | '/docs/guide'
+    | '/docs/terms'
+    | '/docs/'
     | '/_authenticated/demand/$demandId'
     | '/_authenticated/demand/new'
     | '/_authenticated/supply/new'
@@ -173,32 +185,19 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   CreateAccountRoute: typeof CreateAccountRoute
-  GuideRoute: typeof GuideRoute
   LoginRoute: typeof LoginRoute
-  TermsRoute: typeof TermsRoute
+  DocsGuideRoute: typeof DocsGuideRoute
+  DocsTermsRoute: typeof DocsTermsRoute
+  DocsIndexRoute: typeof DocsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/terms': {
-      id: '/terms'
-      path: '/terms'
-      fullPath: '/terms'
-      preLoaderRoute: typeof TermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/guide': {
-      id: '/guide'
-      path: '/guide'
-      fullPath: '/guide'
-      preLoaderRoute: typeof GuideRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/create-account': {
@@ -220,6 +219,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/': {
+      id: '/docs/'
+      path: '/docs'
+      fullPath: '/docs/'
+      preLoaderRoute: typeof DocsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/terms': {
+      id: '/docs/terms'
+      path: '/docs/terms'
+      fullPath: '/docs/terms'
+      preLoaderRoute: typeof DocsTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/guide': {
+      id: '/docs/guide'
+      path: '/docs/guide'
+      fullPath: '/docs/guide'
+      preLoaderRoute: typeof DocsGuideRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/me': {
@@ -293,9 +313,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   CreateAccountRoute: CreateAccountRoute,
-  GuideRoute: GuideRoute,
   LoginRoute: LoginRoute,
-  TermsRoute: TermsRoute,
+  DocsGuideRoute: DocsGuideRoute,
+  DocsTermsRoute: DocsTermsRoute,
+  DocsIndexRoute: DocsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

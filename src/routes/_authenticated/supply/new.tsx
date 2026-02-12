@@ -106,7 +106,7 @@ function RouteComponent() {
 
   return (
     <Layout>
-      <Card className='h-full md:w-md'>
+      <Card className='h-full md:w-lg'>
         <CardHeader className='flex gap-2 flex-col'>
           <p>New Supply</p>
           <Textarea 

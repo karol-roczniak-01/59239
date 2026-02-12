@@ -24,16 +24,14 @@ function RouteComponent() {
     { label: 'Demand', path: '/demand', icon: BadgeDollarSign },
     { label: 'Supply', path: '/supply', icon: Factory },
     { label: 'Me', path: '/me', icon: User },
-    { label: 'Guide', path: '/guide', icon: FileQuestion },
-    { label: 'Terms', path: '/terms', icon: Section },
+    { label: 'Docs', path: '/docs', icon: FileQuestion },
     { label: 'Logout', icon: LogOut, onSelect: handleLogout }
   ];
 
   const unauthorizedOptions = [
     { label: 'Create Account', path: '/create-account', icon: UserPlus },
     { label: 'Log In', path: '/login', icon: User },
-    { label: 'Guide', path: '/guide', icon: FileQuestion },
-    { label: 'Terms', path: '/terms', icon: Section },
+    { label: 'Docs', path: '/docs', icon: FileQuestion },
   ];
 
   if (auth.isLoading) {

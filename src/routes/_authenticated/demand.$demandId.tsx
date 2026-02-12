@@ -128,7 +128,7 @@ function RouteComponent() {
 
   return (
     <Layout>
-      <Card className='h-full'>
+      <Card className='h-full md:w-lg'>
         <CardHeader className='justify-between flex items-center w-full'>
           <span>
             #{demand.id.slice(0, 8)}

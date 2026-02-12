@@ -25,7 +25,7 @@ function RouteComponent() {
 
   return (
     <Layout>
-      <Card className='h-full'>
+      <Card className='h-full md:w-lg'>
         <CardHeader>
           My Applications ({appliedDemands.length})
         </CardHeader>

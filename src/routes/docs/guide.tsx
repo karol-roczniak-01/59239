@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader } from '@/components/Card'
 import Layout from '@/components/Layout'
 import { createFileRoute, Link } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/guide')({
+export const Route = createFileRoute('/docs/guide')({
   component: RouteComponent,
 })
 

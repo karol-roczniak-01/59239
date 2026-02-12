@@ -50,7 +50,7 @@ function RouteComponent() {
 
   return (
     <Layout>
-      <Card className='h-fit'>
+      <Card className='h-fit md:w-lg'>
         <CardHeader>
           New Demand
         </CardHeader>
