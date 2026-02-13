@@ -255,7 +255,7 @@ function RouteComponent() {
         {!showPayment ? (
           <Card className='bg-background md:w-md w-full h-1/3'>
             <CardHeader>
-              <p>Apply for: $29.00</p>
+              <p>Apply for: $149.00</p>
               <p className='text-sm opacity-70'>After your application is approved, you&apos;ll receive the buyer&apos;s contact details to discuss the deal directly</p>
             </CardHeader>
             <CardContent className=''>
