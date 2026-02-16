@@ -17,6 +17,7 @@ function RouteComponent() {
   const docsOptions = [
     { label: 'Guide', path: '/docs/guide', icon: FileQuestion },
     { label: 'Terms', path: '/docs/terms', icon: Section },
+    { label: 'Privacy', path: '/docs/privacy', icon: Section }
   ]
 
   return (

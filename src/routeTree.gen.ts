@@ -15,6 +15,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DocsIndexRouteImport } from './routes/docs/index'
 import { Route as DocsTermsRouteImport } from './routes/docs/terms'
+import { Route as DocsPrivacyRouteImport } from './routes/docs/privacy'
 import { Route as DocsGuideRouteImport } from './routes/docs/guide'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedSupplyIndexRouteImport } from './routes/_authenticated/supply/index'
@@ -50,6 +51,11 @@ const DocsIndexRoute = DocsIndexRouteImport.update({
 const DocsTermsRoute = DocsTermsRouteImport.update({
   id: '/docs/terms',
   path: '/docs/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsPrivacyRoute = DocsPrivacyRouteImport.update({
+  id: '/docs/privacy',
+  path: '/docs/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsGuideRoute = DocsGuideRouteImport.update({
@@ -97,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/me': typeof AuthenticatedMeRoute
   '/docs/guide': typeof DocsGuideRoute
+  '/docs/privacy': typeof DocsPrivacyRoute
   '/docs/terms': typeof DocsTermsRoute
   '/docs/': typeof DocsIndexRoute
   '/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/me': typeof AuthenticatedMeRoute
   '/docs/guide': typeof DocsGuideRoute
+  '/docs/privacy': typeof DocsPrivacyRoute
   '/docs/terms': typeof DocsTermsRoute
   '/docs': typeof DocsIndexRoute
   '/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
@@ -127,6 +135,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/docs/guide': typeof DocsGuideRoute
+  '/docs/privacy': typeof DocsPrivacyRoute
   '/docs/terms': typeof DocsTermsRoute
   '/docs/': typeof DocsIndexRoute
   '/_authenticated/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
@@ -143,6 +152,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/me'
     | '/docs/guide'
+    | '/docs/privacy'
     | '/docs/terms'
     | '/docs/'
     | '/demand/$demandId'
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/me'
     | '/docs/guide'
+    | '/docs/privacy'
     | '/docs/terms'
     | '/docs'
     | '/demand/$demandId'
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/_authenticated/me'
     | '/docs/guide'
+    | '/docs/privacy'
     | '/docs/terms'
     | '/docs/'
     | '/_authenticated/demand/$demandId'
@@ -187,6 +199,7 @@ export interface RootRouteChildren {
   CreateAccountRoute: typeof CreateAccountRoute
   LoginRoute: typeof LoginRoute
   DocsGuideRoute: typeof DocsGuideRoute
+  DocsPrivacyRoute: typeof DocsPrivacyRoute
   DocsTermsRoute: typeof DocsTermsRoute
   DocsIndexRoute: typeof DocsIndexRoute
 }
@@ -233,6 +246,13 @@ declare module '@tanstack/react-router' {
       path: '/docs/terms'
       fullPath: '/docs/terms'
       preLoaderRoute: typeof DocsTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/privacy': {
+      id: '/docs/privacy'
+      path: '/docs/privacy'
+      fullPath: '/docs/privacy'
+      preLoaderRoute: typeof DocsPrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs/guide': {
@@ -315,6 +335,7 @@ const rootRouteChildren: RootRouteChildren = {
   CreateAccountRoute: CreateAccountRoute,
   LoginRoute: LoginRoute,
   DocsGuideRoute: DocsGuideRoute,
+  DocsPrivacyRoute: DocsPrivacyRoute,
   DocsTermsRoute: DocsTermsRoute,
   DocsIndexRoute: DocsIndexRoute,
 }

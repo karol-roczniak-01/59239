@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { supplyByDemandIdQueryOptions } from '@/hooks/useSupply'
 import { useCreateSupply } from '@/hooks/useSupply'
 import Layout from '@/components/Layout'
@@ -31,6 +31,7 @@ export const Route = createFileRoute('/_authenticated/demand/$demandId')({
 })
 
 function RouteComponent() {
+  const queryClient = useQueryClient();
   const { auth } = Route.useRouteContext();
   const { demandId } = Route.useParams()
   const { data: demandData } = useSuspenseQuery(demandByIdQueryOptions(demandId, auth.user?.id))
@@ -109,6 +110,15 @@ function RouteComponent() {
       },
       {
         onSuccess: () => {
+          // Invalidate the correct query with matching key structure
+          queryClient.invalidateQueries({
+            queryKey: ['demand', 'by-id', demandId, auth.user?.id]
+          })
+          
+          // Also invalidate supply query
+          queryClient.invalidateQueries({
+            queryKey: ['supply', 'by-demand', demandId]
+          })
           setContent('')
           setEmail('')
           setPhone('')
