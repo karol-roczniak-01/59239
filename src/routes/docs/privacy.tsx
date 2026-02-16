@@ -76,14 +76,14 @@ function RouteComponent() {
             <h1>
               3. Information Sharing
             </h1>
-            <h2 className='font-semibold ml-4'>
+            <h2 className='ml-4'>
               3.1 With Other Users
             </h2>
             <p className='opacity-80 ml-4'>
               When you apply to a demand listing or when someone applies to your demand, contact information is exchanged between both parties. This is the core functionality of our platform and is done with your explicit consent when you submit an application or create a demand listing.
             </p>
             
-            <h2 className='font-semibold ml-4 mt-3'>
+            <h2 className='ml-4 mt-3'>
               3.2 With Service Providers
             </h2>
             <p className='opacity-80 ml-4'>
@@ -95,7 +95,7 @@ function RouteComponent() {
               <li>AI service providers (for matching algorithms)</li>
             </ul>
             
-            <h2 className='font-semibold ml-4 mt-3'>
+            <h2 className='ml-4 mt-3'>
               3.3 Legal Requirements
             </h2>
             <p className='opacity-80 ml-4'>

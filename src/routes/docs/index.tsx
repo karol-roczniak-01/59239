@@ -2,7 +2,7 @@ import Layout from '@/components/Layout';
 import Loader from '@/components/Loader'
 import Menu from '@/components/Menu';
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { FileQuestion, Section } from 'lucide-react';
+import { FileQuestion, HatGlasses, Section } from 'lucide-react';
 import { useState } from 'react';
 
 export const Route = createFileRoute('/docs/')({
@@ -17,7 +17,7 @@ function RouteComponent() {
   const docsOptions = [
     { label: 'Guide', path: '/docs/guide', icon: FileQuestion },
     { label: 'Terms', path: '/docs/terms', icon: Section },
-    { label: 'Privacy', path: '/docs/privacy', icon: Section }
+    { label: 'Privacy', path: '/docs/privacy', icon: HatGlasses }
   ]
 
   return (
