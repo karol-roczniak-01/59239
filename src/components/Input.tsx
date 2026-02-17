@@ -1,9 +1,9 @@
-import * as React from "react"
-import { twMerge } from "tailwind-merge"
-import { type LucideIcon } from "lucide-react"
+import * as React from 'react'
+import { twMerge } from 'tailwind-merge'
+import type {LucideIcon} from 'lucide-react';
 
-interface InputProps extends React.ComponentProps<"input"> {
-  icon?: LucideIcon;
+interface InputProps extends React.ComponentProps<'input'> {
+  icon?: LucideIcon
 }
 
 function Input({ className, type, icon: Icon, ...props }: InputProps) {
@@ -17,8 +17,8 @@ function Input({ className, type, icon: Icon, ...props }: InputProps) {
           type={type}
           data-slot="input"
           className={twMerge(
-            "h-8 border border-primary w-full pl-7 pr-2 outline-none", 
-            className
+            'h-8 border border-primary w-full pl-7 pr-2 outline-none',
+            className,
           )}
           {...props}
         />
@@ -31,8 +31,8 @@ function Input({ className, type, icon: Icon, ...props }: InputProps) {
       type={type}
       data-slot="input"
       className={twMerge(
-        "h-8 border border-primary w-full px-2 outline-none", 
-        className
+        'h-8 border border-primary w-full px-2 outline-none',
+        className,
       )}
       {...props}
     />

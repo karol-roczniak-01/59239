@@ -6,8 +6,8 @@
 
 ## Monetization
 
-Users can apply for demand thay have supply for. Application makes contact info visible for both sides. Each application costs a fee. Now 10 USD. Ideally depending on potential deal size.
+Users can apply for demand thay have supply for. Application makes contact info visible for both sides. Each application costs a fee. Now 149 USD. Ideally depending on potential deal size.
 
 ## Limitations
 
-Ai costs, so each query for current demands, shound be limited (TODO), to some number of requests per day. 
+Ai costs, so each query for current demands, shound be limited (TODO), to some number of requests per day.

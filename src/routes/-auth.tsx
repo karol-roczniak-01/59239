@@ -1,13 +1,25 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import {
+  
+  createContext,
+  useContext,
+  useEffect,
+  useState
+} from 'react'
+import {
+  fetchCurrentUser,
+  loginUser,
+  logoutUser,
+  signupUser,
+} from '../hooks/useAuth'
+import type {ReactNode} from 'react';
+import type {
+  AuthContext,
+  LoginCredentials,
+  SignupData,
+  User,
+} from '../utils/types'
 import Layout from '@/components/Layout'
 import Loader from '@/components/Loader'
-import type { AuthContext, LoginCredentials, SignupData, User } from '../utils/types'
-import { 
-  fetchCurrentUser, 
-  loginUser, 
-  signupUser, 
-  logoutUser,
-} from '../hooks/useAuth'
 
 const Auth = createContext<AuthContext | null>(null)
 
@@ -18,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Check for existing session on mount
   useEffect(() => {
     fetchCurrentUser()
-      .then(user => setUser(user))
+      .then((user) => setUser(user))
       .catch(() => setUser(null))
       .finally(() => setIsLoading(false))
   }, [])
@@ -31,7 +43,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.location.href = '/'
   }
 
-  const signup = async (id: string, username: string, fullName: string, email: string, password: string) => {
+  const signup = async (
+    id: string,
+    username: string,
+    fullName: string,
+    email: string,
+    password: string,
+  ) => {
     const signupData: SignupData = { id, username, fullName, email, password }
     const user = await signupUser(signupData)
     setUser(user)
@@ -54,9 +72,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <Auth.Provider value={{ user, login, signup, logout, isLoading }}>
       {isLoading ? (
-        <Layout>
+        <div className='h-dvh w-full flex items-center justify-center'>
           <Loader />
-        </Layout>
+        </div>
       ) : (
         children
       )}
@@ -78,8 +96,8 @@ export function useAuthFetch() {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        ...options.headers
-      }
+        ...options.headers,
+      },
     })
   }
 }

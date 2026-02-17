@@ -1,25 +1,30 @@
-import Loader from '@/components/Loader'
-import { createFileRoute, redirect, useNavigate, Link } from '@tanstack/react-router'
-import { useAuth } from './-auth'
+import {
+  Link,
+  createFileRoute,
+  redirect,
+  useNavigate,
+} from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
-import { Input } from '@/components/Input'
-import { Button } from '@/components/Button'
 import { AlertCircle, CircleAlertIcon } from 'lucide-react'
 import { useState } from 'react'
+import { useAuth } from './-auth'
+import { Input } from '@/components/Input'
+import { Button } from '@/components/Button'
+import Loader from '@/components/Loader'
 import Layout from '@/components/Layout'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/Card'
 
 // UUID generation helper for browser
 function generateUUID(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
+    return crypto.randomUUID()
   }
   // Fallback for older browsers
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
 }
 
 export const Route = createFileRoute('/create-account')({
@@ -33,9 +38,9 @@ export const Route = createFileRoute('/create-account')({
 })
 
 function RouteComponent() {
-  const { signup } = useAuth();
-  const navigate = useNavigate();
-  const [apiError, setApiError] = useState<string>('');
+  const { signup } = useAuth()
+  const navigate = useNavigate()
+  const [apiError, setApiError] = useState<string>('')
 
   const form = useForm({
     defaultValues: {
@@ -44,39 +49,45 @@ function RouteComponent() {
       email: '',
       password: '',
       confirmPassword: '',
-      acceptTerms: false
+      acceptTerms: false,
     },
     onSubmit: async ({ value }) => {
       try {
-        setApiError('');
-        const id = generateUUID();
-        await signup(id, value.username, value.fullName, value.email, value.password);
-        navigate({ to: '/' });
+        setApiError('')
+        const id = generateUUID()
+        await signup(
+          id,
+          value.username,
+          value.fullName,
+          value.email,
+          value.password,
+        )
+        navigate({ to: '/' })
       } catch (err) {
-        setApiError(err instanceof Error ? err.message : 'Signup failed');
+        setApiError(err instanceof Error ? err.message : 'Signup failed')
       }
     },
-  });
+  })
 
   return (
     <Layout>
-      <Card 
-        className='h-full'
+      <Card
+        className="h-full"
         asForm
         onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          form.handleSubmit();
+          e.preventDefault()
+          e.stopPropagation()
+          form.handleSubmit()
         }}
       >
         <CardHeader>
           <p>Create your account</p>
         </CardHeader>
-        <CardContent className='flex flex-col gap-2'>
+        <CardContent className="flex flex-col gap-2">
           {/* API Error Message */}
           {apiError && (
-            <div className='flex items-center gap-2 p-2 border text-sm'>
-              <AlertCircle size={16} className='shrink-0' />
+            <div className="flex items-center gap-2 p-2 border text-sm">
+              <AlertCircle size={16} className="shrink-0" />
               <p>{apiError}</p>
             </div>
           )}
@@ -86,18 +97,19 @@ function RouteComponent() {
             name="username"
             validators={{
               onChange: ({ value }) => {
-                if (!value) return 'Username is required';
-                if (value.length < 3) return 'Username must be at least 3 characters';
+                if (!value) return 'Username is required'
+                if (value.length < 3)
+                  return 'Username must be at least 3 characters'
                 if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
-                  return 'Username can only contain letters, numbers, underscores, and hyphens';
+                  return 'Username can only contain letters, numbers, underscores, and hyphens'
                 }
-                return undefined;
+                return undefined
               },
             }}
           >
             {(field) => (
-              <div className='space-y-1'>
-                <label htmlFor={field.name} className='block text-sm'>
+              <div className="space-y-1">
+                <label htmlFor={field.name} className="block text-sm">
                   Username (unique)
                 </label>
                 <Input
@@ -110,8 +122,8 @@ function RouteComponent() {
                   placeholder="johndoe1"
                 />
                 {field.state.meta.errors.length > 0 && (
-                  <div className='flex items-center gap-1 text-sm text-primary/70'>
-                    <CircleAlertIcon size={14} className='shrink-0' />
+                  <div className="flex items-center gap-1 text-sm text-primary/70">
+                    <CircleAlertIcon size={14} className="shrink-0" />
                     <p>{field.state.meta.errors[0]}</p>
                   </div>
                 )}
@@ -124,15 +136,16 @@ function RouteComponent() {
             name="fullName"
             validators={{
               onChange: ({ value }) => {
-                if (!value) return 'Full name is required';
-                if (value.length < 2) return 'Full name must be at least 2 characters';
-                return undefined;
+                if (!value) return 'Full name is required'
+                if (value.length < 2)
+                  return 'Full name must be at least 2 characters'
+                return undefined
               },
             }}
           >
             {(field) => (
-              <div className='space-y-1'>
-                <label htmlFor={field.name} className='block text-sm'>
+              <div className="space-y-1">
+                <label htmlFor={field.name} className="block text-sm">
                   Full Name
                 </label>
                 <Input
@@ -145,8 +158,8 @@ function RouteComponent() {
                   placeholder="John Doe"
                 />
                 {field.state.meta.errors.length > 0 && (
-                  <div className='flex items-center gap-1 text-sm text-primary/70'>
-                    <CircleAlertIcon size={14} className='shrink-0' />
+                  <div className="flex items-center gap-1 text-sm text-primary/70">
+                    <CircleAlertIcon size={14} className="shrink-0" />
                     <p>{field.state.meta.errors[0]}</p>
                   </div>
                 )}
@@ -159,17 +172,17 @@ function RouteComponent() {
             name="email"
             validators={{
               onChange: ({ value }) => {
-                if (!value) return 'Email is required';
+                if (!value) return 'Email is required'
                 if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-                  return 'Invalid email format';
+                  return 'Invalid email format'
                 }
-                return undefined;
+                return undefined
               },
             }}
           >
             {(field) => (
-              <div className='space-y-1'>
-                <label htmlFor={field.name} className='block text-sm'>
+              <div className="space-y-1">
+                <label htmlFor={field.name} className="block text-sm">
                   Email
                 </label>
                 <Input
@@ -183,8 +196,8 @@ function RouteComponent() {
                   placeholder="email@example.com"
                 />
                 {field.state.meta.errors.length > 0 && (
-                  <div className='flex items-center gap-1 text-sm text-primary/70'>
-                    <AlertCircle size={14} className='shrink-0' />
+                  <div className="flex items-center gap-1 text-sm text-primary/70">
+                    <AlertCircle size={14} className="shrink-0" />
                     <p>{field.state.meta.errors[0]}</p>
                   </div>
                 )}
@@ -197,18 +210,22 @@ function RouteComponent() {
             name="password"
             validators={{
               onChange: ({ value }) => {
-                if (!value) return 'Password is required';
-                if (value.length < 8) return 'Password must be at least 8 characters';
-                if (!/[A-Z]/.test(value)) return 'Must contain at least one uppercase letter';
-                if (!/[a-z]/.test(value)) return 'Must contain at least one lowercase letter';
-                if (!/[0-9]/.test(value)) return 'Must contain at least one number';
-                return undefined;
+                if (!value) return 'Password is required'
+                if (value.length < 8)
+                  return 'Password must be at least 8 characters'
+                if (!/[A-Z]/.test(value))
+                  return 'Must contain at least one uppercase letter'
+                if (!/[a-z]/.test(value))
+                  return 'Must contain at least one lowercase letter'
+                if (!/[0-9]/.test(value))
+                  return 'Must contain at least one number'
+                return undefined
               },
             }}
           >
             {(field) => (
-              <div className='space-y-1'>
-                <label htmlFor={field.name} className='block text-sm'>
+              <div className="space-y-1">
+                <label htmlFor={field.name} className="block text-sm">
                   Password
                 </label>
                 <Input
@@ -222,8 +239,8 @@ function RouteComponent() {
                   placeholder="••••••••"
                 />
                 {field.state.meta.errors.length > 0 && (
-                  <div className='flex items-center gap-1 text-sm text-primary/70'>
-                    <AlertCircle size={14} className='shrink-0' />
+                  <div className="flex items-center gap-1 text-sm text-primary/70">
+                    <AlertCircle size={14} className="shrink-0" />
                     <p>{field.state.meta.errors[0]}</p>
                   </div>
                 )}
@@ -237,16 +254,16 @@ function RouteComponent() {
             validators={{
               onChangeListenTo: ['password'],
               onChange: ({ value, fieldApi }) => {
-                if (!value) return 'Please confirm your password';
-                const password = fieldApi.form.getFieldValue('password');
-                if (value !== password) return 'Passwords do not match';
-                return undefined;
+                if (!value) return 'Please confirm your password'
+                const password = fieldApi.form.getFieldValue('password')
+                if (value !== password) return 'Passwords do not match'
+                return undefined
               },
             }}
           >
             {(field) => (
-              <div className='space-y-1'>
-                <label htmlFor={field.name} className='block text-sm'>
+              <div className="space-y-1">
+                <label htmlFor={field.name} className="block text-sm">
                   Confirm Password
                 </label>
                 <Input
@@ -260,8 +277,8 @@ function RouteComponent() {
                   placeholder="••••••••"
                 />
                 {field.state.meta.errors.length > 0 && (
-                  <div className='flex items-center gap-1 text-sm text-primary/70'>
-                    <AlertCircle size={14} className='shrink-0' />
+                  <div className="flex items-center gap-1 text-sm text-primary/70">
+                    <AlertCircle size={14} className="shrink-0" />
                     <p>{field.state.meta.errors[0]}</p>
                   </div>
                 )}
@@ -274,23 +291,23 @@ function RouteComponent() {
             name="acceptTerms"
             validators={{
               onChange: ({ value }) => {
-                if (!value) return 'You must accept the Terms of Service';
-                return undefined;
+                if (!value) return 'You must accept the Terms of Service'
+                return undefined
               },
             }}
           >
             {(field) => (
-              <div className='space-y-1 pt-2'>
-                <div className='flex items-start gap-2'>
+              <div className="space-y-1 pt-2">
+                <div className="flex items-start gap-2">
                   <input
                     id={field.name}
                     type="checkbox"
                     checked={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.checked)}
-                    className='mt-1'
+                    className="mt-1"
                   />
-                  <label htmlFor={field.name} className='text-sm'>
+                  <label htmlFor={field.name} className="text-sm">
                     I agree to the{' '}
                     <Link to="/docs/terms" className="underline">
                       Terms of Service
@@ -298,8 +315,8 @@ function RouteComponent() {
                   </label>
                 </div>
                 {field.state.meta.errors.length > 0 && (
-                  <div className='flex items-center gap-1 text-sm text-primary/70 ml-6'>
-                    <CircleAlertIcon size={14} className='shrink-0' />
+                  <div className="flex items-center gap-1 text-sm text-primary/70 ml-6">
+                    <CircleAlertIcon size={14} className="shrink-0" />
                     <p>{field.state.meta.errors[0]}</p>
                   </div>
                 )}
@@ -307,7 +324,7 @@ function RouteComponent() {
             )}
           </form.Field>
         </CardContent>
-        
+
         <CardFooter>
           <form.Subscribe
             selector={(state) => ({
@@ -319,13 +336,9 @@ function RouteComponent() {
               <Button
                 type="submit"
                 disabled={!canSubmit || isSubmitting}
-                className='w-full'
+                className="w-full"
               >
-                {isSubmitting ? (
-                  'Creating account...'
-                ) : (
-                  'Create Account'
-                )}
+                {isSubmitting ? 'Creating account...' : 'Create Account'}
               </Button>
             )}
           </form.Subscribe>

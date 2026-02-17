@@ -1,49 +1,54 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
-import { supplyByDemandIdQueryOptions } from '@/hooks/useSupply'
-import { useCreateSupply } from '@/hooks/useSupply'
+import { useState } from 'react'
+import { loadStripe } from '@stripe/stripe-js'
+import { Elements } from '@stripe/react-stripe-js'
+import { Mail, Phone } from 'lucide-react'
+import { supplyByDemandIdQueryOptions, useCreateSupply  } from '@/hooks/useSupply'
 import Layout from '@/components/Layout'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/Card'
 import { Input } from '@/components/Input'
 import { Textarea } from '@/components/Textarea'
 import { Button } from '@/components/Button'
 import Loader from '@/components/Loader'
-import { useState } from 'react'
 import { demandByIdQueryOptions } from '@/hooks/useDemand'
-import { loadStripe } from '@stripe/stripe-js'
-import { Elements } from '@stripe/react-stripe-js'
 import { PaymentForm } from '@/components/PaymentForm'
 import Dialog from '@/components/Dialog'
-import { Mail, Phone } from 'lucide-react'
 
 // Initialize Stripe
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
 
 export const Route = createFileRoute('/_authenticated/demand/$demandId')({
   pendingComponent: () => <Loader />,
   loader: ({ context: { queryClient, auth }, params: { demandId } }) => {
     return Promise.all([
-      queryClient.ensureQueryData(demandByIdQueryOptions(demandId, auth.user?.id)),
-      queryClient.ensureQueryData(supplyByDemandIdQueryOptions(demandId))
-    ]);
+      queryClient.ensureQueryData(
+        demandByIdQueryOptions(demandId, auth.user?.id),
+      ),
+      queryClient.ensureQueryData(supplyByDemandIdQueryOptions(demandId)),
+    ])
   },
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  const queryClient = useQueryClient();
-  const { auth } = Route.useRouteContext();
+  const queryClient = useQueryClient()
+  const { auth } = Route.useRouteContext()
   const { demandId } = Route.useParams()
-  const { data: demandData } = useSuspenseQuery(demandByIdQueryOptions(demandId, auth.user?.id))
-  const { data: supply } = useSuspenseQuery(supplyByDemandIdQueryOptions(demandId))
-  
-  const demand = demandData.demand;
-  const hasApplied = demandData.hasApplied;
-  
+  const { data: demandData } = useSuspenseQuery(
+    demandByIdQueryOptions(demandId, auth.user?.id),
+  )
+  const { data: supply } = useSuspenseQuery(
+    supplyByDemandIdQueryOptions(demandId),
+  )
+
+  const demand = demandData.demand
+  const hasApplied = demandData.hasApplied
+
   // Calculate if expired on frontend
-  const currentTime = Math.floor(Date.now() / 1000);
-  const isExpired = currentTime > demand.endingAt;
-  
+  const currentTime = Math.floor(Date.now() / 1000)
+  const isExpired = currentTime > demand.endingAt
+
   const [content, setContent] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -54,19 +59,21 @@ function RouteComponent() {
   const [paymentError, setPaymentError] = useState<string | null>(null)
   const [view, setView] = useState<'details' | 'supply'>('details')
   const [showApplyDialog, setShowApplyDialog] = useState(false)
-  
-  const trimmedContent = content.trim();
-  const trimmedEmail = email.trim();
-  const isValidContent = trimmedContent.length >= 30 && trimmedContent.length <= 1000;
-  
+
+  const trimmedContent = content.trim()
+  const trimmedEmail = email.trim()
+  const isValidContent =
+    trimmedContent.length >= 30 && trimmedContent.length <= 1000
+
   const { mutate: createSupply, isPending, error } = useCreateSupply()
 
   // Calculate days left
-  const secondsLeft = demand.endingAt - currentTime;
-  const daysLeft = Math.ceil(secondsLeft / 86400);
+  const secondsLeft = demand.endingAt - currentTime
+  const daysLeft = Math.ceil(secondsLeft / 86400)
 
   const handleInitiatePayment = async () => {
-    if (!trimmedContent || !trimmedEmail || !isValidContent || !auth.user?.id) return
+    if (!trimmedContent || !trimmedEmail || !isValidContent || !auth.user?.id)
+      return
 
     setIsCreatingIntent(true)
     setPaymentError(null)
@@ -77,8 +84,8 @@ function RouteComponent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           demandId: demandId,
-          userId: auth.user.id
-        })
+          userId: auth.user.id,
+        }),
       })
 
       if (!response.ok) {
@@ -89,7 +96,9 @@ function RouteComponent() {
       setClientSecret(data.clientSecret)
       setShowPayment(true)
     } catch (err) {
-      setPaymentError(err instanceof Error ? err.message : 'Failed to initiate payment')
+      setPaymentError(
+        err instanceof Error ? err.message : 'Failed to initiate payment',
+      )
     } finally {
       setIsCreatingIntent(false)
     }
@@ -97,7 +106,7 @@ function RouteComponent() {
 
   const handlePaymentSuccess = (paymentId: string) => {
     setPaymentIntentId(paymentId)
-    
+
     // Submit supply with payment
     createSupply(
       {
@@ -106,18 +115,18 @@ function RouteComponent() {
         email: trimmedEmail,
         phone: phone.trim() || undefined,
         userId: auth.user!.id,
-        paymentIntentId: paymentId
+        paymentIntentId: paymentId,
       },
       {
         onSuccess: () => {
           // Invalidate the correct query with matching key structure
           queryClient.invalidateQueries({
-            queryKey: ['demand', 'by-id', demandId, auth.user?.id]
+            queryKey: ['demand', 'by-id', demandId, auth.user?.id],
           })
-          
+
           // Also invalidate supply query
           queryClient.invalidateQueries({
-            queryKey: ['supply', 'by-demand', demandId]
+            queryKey: ['supply', 'by-demand', demandId],
           })
           setContent('')
           setEmail('')
@@ -128,7 +137,7 @@ function RouteComponent() {
           setView('details')
           setShowApplyDialog(false)
         },
-      }
+      },
     )
   }
 
@@ -138,47 +147,54 @@ function RouteComponent() {
 
   return (
     <Layout>
-      <Card className='h-full md:w-lg'>
-        <CardHeader className='justify-between flex items-center w-full'>
-          <span>
-            #{demand.id.slice(0, 8)}
-          </span> 
-          <div className='flex items-center gap-2'>
+      <Card className="h-full md:w-lg">
+        <CardHeader className="justify-between flex items-center w-full">
+          <span>#{demand.id.slice(0, 8)}</span>
+          <div className="flex items-center gap-2">
             <span>
               {new Date(demand.createdAt * 1000).toLocaleDateString()},
             </span>
             {isExpired ? (
-              <span className='text-primary/70'>Expired</span>
+              <span className="text-primary/70">Expired</span>
             ) : (
-              <span className=''>
-                {daysLeft > 0 ? `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left` : 'Expires today'}
+              <span className="">
+                {daysLeft > 0
+                  ? `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`
+                  : 'Expires today'}
               </span>
             )}
-            
           </div>
         </CardHeader>
-        <CardContent className='p-0'>
+        <CardContent className="p-0">
           {view === 'details' ? (
             <div>
-              <p className='p-2 whitespace-pre-wrap'>{demand.content}</p>
-              
+              <p className="p-2 whitespace-pre-wrap">{demand.content}</p>
+
               {/* Show contact info only if user has applied */}
               {hasApplied && (
-                <div className='p-2 border-primary border-t space-y-1'>
-                  <p className='text-sm font-medium'>Contact Information</p>
-                  <p className='text-xs text-primary/70'>Visible because you applied</p>
+                <div className="p-2 border-primary border-t space-y-1">
+                  <p className="text-sm font-medium">Contact Information</p>
+                  <p className="text-xs text-primary/70">
+                    Visible because you applied
+                  </p>
                   {demand.email && (
-                    <div className='flex gap-1 items-center text-sm'>
+                    <div className="flex gap-1 items-center text-sm">
                       <Mail size={14} />
-                      <a href={`mailto:${demand.email}`} className='hover:underline'>
+                      <a
+                        href={`mailto:${demand.email}`}
+                        className="hover:underline"
+                      >
                         {demand.email}
                       </a>
                     </div>
                   )}
                   {demand.phone && (
-                    <div className='flex gap-1 items-center text-sm'>
+                    <div className="flex gap-1 items-center text-sm">
                       <Phone size={14} />
-                      <a href={`tel:${demand.phone}`} className='hover:underline'>
+                      <a
+                        href={`tel:${demand.phone}`}
+                        className="hover:underline"
+                      >
                         {demand.phone}
                       </a>
                     </div>
@@ -187,29 +203,35 @@ function RouteComponent() {
               )}
             </div>
           ) : (
-            <div className='space-y-2 p-2'>
+            <div className="space-y-2 p-2">
               {supply && supply.length > 0 ? (
                 supply.map((item) => (
-                  <div 
-                    key={item.id} 
+                  <div
+                    key={item.id}
                     className={`border border-primary p-2 space-y-2 ${
                       item.userId === auth.user?.id ? 'border' : ''
                     }`}
                   >
-                    <div className='w-full flex justify-between text-sm'>
+                    <div className="w-full flex justify-between text-sm">
                       <p>#{item.id.slice(0, 8)}</p>
-                      <p>{new Date(item.createdAt * 1000).toLocaleDateString()}</p>
+                      <p>
+                        {new Date(item.createdAt * 1000).toLocaleDateString()}
+                      </p>
                     </div>
-                    <p className='whitespace-pre-wrap'>{item.content}</p>
-                    <div className={`text-sm flex gap-2 flex-wrap ${
-                      item.userId === auth.user?.id ? 'opacity-90' : 'text-muted-foreground'
-                    }`}>
-                      <div className='flex gap-1 items-center'>
+                    <p className="whitespace-pre-wrap">{item.content}</p>
+                    <div
+                      className={`text-sm flex gap-2 flex-wrap ${
+                        item.userId === auth.user?.id
+                          ? 'opacity-90'
+                          : 'text-muted-foreground'
+                      }`}
+                    >
+                      <div className="flex gap-1 items-center">
                         <Mail size={14} />
                         {item.email}
                       </div>
                       {item.phone && (
-                        <div className='flex gap-1 items-center'>
+                        <div className="flex gap-1 items-center">
                           <Phone size={14} />
                           {item.phone}
                         </div>
@@ -218,32 +240,30 @@ function RouteComponent() {
                   </div>
                 ))
               ) : (
-                <p className='text-primary/70'>
-                  No supply offers yet
-                </p>
+                <p className="text-primary/70">No supply offers yet</p>
               )}
             </div>
           )}
         </CardContent>
-        <CardFooter className='gap-2 flex flex-col'>
-          <div className='w-full flex gap-2 items-center'>
-            <Button 
-              className='w-full'
+        <CardFooter className="gap-2 flex flex-col">
+          <div className="w-full flex gap-2 items-center">
+            <Button
+              className="w-full"
               onClick={() => setView('details')}
               disabled={view === 'details'}
             >
               Details
             </Button>
-            <Button 
-              className='w-full'
+            <Button
+              className="w-full"
               onClick={() => setView('supply')}
               disabled={view === 'supply'}
             >
               Supply ({supply?.length || 0})
             </Button>
           </div>
-          <Button 
-            className='w-full'
+          <Button
+            className="w-full"
             onClick={() => setShowApplyDialog(true)}
             disabled={hasApplied || isExpired}
           >
@@ -253,8 +273,8 @@ function RouteComponent() {
       </Card>
 
       {/* Apply to Demand Dialog */}
-      <Dialog 
-        isOpen={showApplyDialog} 
+      <Dialog
+        isOpen={showApplyDialog}
         onClose={() => {
           setShowApplyDialog(false)
           setShowPayment(false)
@@ -263,24 +283,27 @@ function RouteComponent() {
         }}
       >
         {!showPayment ? (
-          <Card className='bg-background md:w-md w-full h-1/3'>
+          <Card className="bg-background md:w-md w-full h-1/3">
             <CardHeader>
               <p>Apply for: $149.00</p>
-              <p className='text-sm opacity-70'>After your application is approved, you&apos;ll receive the buyer&apos;s contact details to discuss the deal directly</p>
+              <p className="text-sm opacity-70">
+                After your application is approved, you&apos;ll receive the
+                buyer&apos;s contact details to discuss the deal directly
+              </p>
             </CardHeader>
-            <CardContent className=''>
+            <CardContent className="">
               <Textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Explain how you can fulfill this requirement..."
-                className='resize-none'
+                className="resize-none"
                 rows={4}
                 disabled={isPending || isCreatingIntent}
               />
-              <p className='text-xs text-muted-foreground'>
+              <p className="text-xs text-muted-foreground">
                 {content.trim().length}/500 characters (minimum 30)
               </p>
-              <div className='flex gap-2 mt-2'>
+              <div className="flex gap-2 mt-2">
                 <Input
                   type="email"
                   value={email}
@@ -301,14 +324,14 @@ function RouteComponent() {
               <Button
                 onClick={handleInitiatePayment}
                 disabled={
-                  isPending || 
-                  isCreatingIntent || 
-                  !trimmedContent || 
-                  !trimmedEmail || 
+                  isPending ||
+                  isCreatingIntent ||
+                  !trimmedContent ||
+                  !trimmedEmail ||
                   !isValidContent ||
                   !auth.user?.id
                 }
-                className='w-full'
+                className="w-full"
               >
                 {isCreatingIntent ? 'Preparing...' : 'Continue to Payment'}
               </Button>
@@ -317,12 +340,9 @@ function RouteComponent() {
         ) : (
           <>
             {clientSecret && (
-              <Card className='bg-background md:w-md'>
+              <Card className="bg-background md:w-md">
                 <CardContent>
-                  <Elements
-                    stripe={stripePromise}
-                    options={{clientSecret}}
-                  >
+                  <Elements stripe={stripePromise} options={{ clientSecret }}>
                     <PaymentForm
                       clientSecret={clientSecret}
                       onSuccess={handlePaymentSuccess}
@@ -331,14 +351,14 @@ function RouteComponent() {
                     />
                   </Elements>
                   {paymentError && (
-                    <p className="text-primary/70 text-sm">
-                      {paymentError}
-                    </p>
+                    <p className="text-primary/70 text-sm">{paymentError}</p>
                   )}
 
                   {error && (
                     <p className="text-primary/70 text-sm">
-                      {error instanceof Error ? error.message : 'Failed to submit supply'}
+                      {error instanceof Error
+                        ? error.message
+                        : 'Failed to submit supply'}
                     </p>
                   )}
                 </CardContent>
@@ -350,7 +370,7 @@ function RouteComponent() {
                       setPaymentError(null)
                     }}
                     disabled={isPending}
-                    className='w-full'
+                    className="w-full"
                   >
                     Back
                   </Button>

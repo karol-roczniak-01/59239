@@ -1,8 +1,15 @@
-import Loader from '@/components/Loader'
-import Menu from '@/components/Menu'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
-import { User, LogOut, UserPlus, Factory, BadgeDollarSign, FileText } from 'lucide-react'
+import {
+  BadgeDollarSign,
+  Factory,
+  FileText,
+  LogOut,
+  User,
+  UserPlus,
+} from 'lucide-react'
+import Menu from '@/components/Menu'
+import Loader from '@/components/Loader'
 import Layout from '@/components/Layout'
 
 export const Route = createFileRoute('/')({
@@ -11,28 +18,28 @@ export const Route = createFileRoute('/')({
 })
 
 function RouteComponent() {
-  const { auth } = Route.useRouteContext();
-  const navigate = useNavigate();
-  const [_lastSelected, setLastSelected] = useState<string>('');
+  const { auth } = Route.useRouteContext()
+  const navigate = useNavigate()
+  const [_lastSelected, setLastSelected] = useState<string>('')
 
   const handleLogout = () => {
-    auth.logout();
+    auth.logout()
     navigate({ to: '/' })
-  };
+  }
 
   const authorizedOptions = [
     { label: 'Demand', path: '/demand', icon: BadgeDollarSign },
     { label: 'Supply', path: '/supply', icon: Factory },
     { label: 'Me', path: '/me', icon: User },
     { label: 'Docs', path: '/docs', icon: FileText },
-    { label: 'Logout', icon: LogOut, onSelect: handleLogout }
-  ];
+    { label: 'Logout', icon: LogOut, onSelect: handleLogout },
+  ]
 
   const unauthorizedOptions = [
     { label: 'Create Account', path: '/create-account', icon: UserPlus },
     { label: 'Log In', path: '/login', icon: User },
     { label: 'Docs', path: '/docs', icon: FileText },
-  ];
+  ]
 
   if (auth.isLoading) {
     return <Loader />
@@ -41,10 +48,10 @@ function RouteComponent() {
   if (auth.user) {
     return (
       <Layout>
-        <Menu 
+        <Menu
           options={authorizedOptions}
           onSelect={(option, index) => {
-          setLastSelected(`${option.label} (${index})`);
+            setLastSelected(`${option.label} (${index})`)
             if (option.path) {
               navigate({ to: option.path })
             }
@@ -56,10 +63,10 @@ function RouteComponent() {
 
   return (
     <Layout>
-      <Menu 
+      <Menu
         options={unauthorizedOptions}
         onSelect={(option, index) => {
-        setLastSelected(`${option.label} (${index})`);
+          setLastSelected(`${option.label} (${index})`)
           if (option.path) {
             navigate({ to: option.path })
           }

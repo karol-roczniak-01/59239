@@ -10,62 +10,62 @@ import { humansByNameQueryOptions, organizationsByNameQueryOptions } from '@/hoo
 import { z } from 'zod'
 
 const searchSchema = z.object({
-  q: z.string().optional().default(''),
-  mode: z.enum(['humans', 'organizations']).optional().default('humans'),
+q: z.string().optional().default(''),
+mode: z.enum(['humans', 'organizations']).optional().default('humans'),
 })
 
-export const Route = createFileRoute('/_authenticated/users')({
-  validateSearch: searchSchema,
-  component: RouteComponent,
+export const Route = createFileRoute('/\_authenticated/users')({
+validateSearch: searchSchema,
+component: RouteComponent,
 })
 
 type ViewMode = 'humans' | 'organizations'
 
 function RouteComponent() {
-  const navigate = useNavigate();
-  const { q: searchTerm, mode: viewMode } = Route.useSearch()
-  
-  // Debounce the search term to avoid excessive API calls
-  const debouncedSearchTerm = useDebounce(searchTerm, 300)
+const navigate = useNavigate();
+const { q: searchTerm, mode: viewMode } = Route.useSearch()
 
-  // Use the debounced value for queries
-  const humansQuery = useQuery(humansByNameQueryOptions(debouncedSearchTerm))
-  const orgsQuery = useQuery(organizationsByNameQueryOptions(debouncedSearchTerm))
+// Debounce the search term to avoid excessive API calls
+const debouncedSearchTerm = useDebounce(searchTerm, 300)
 
-  // Select which query to display based on view mode
-  const activeQuery = viewMode === 'humans' ? humansQuery : orgsQuery
-  const { data: users, isLoading, error, isFetching } = activeQuery
+// Use the debounced value for queries
+const humansQuery = useQuery(humansByNameQueryOptions(debouncedSearchTerm))
+const orgsQuery = useQuery(organizationsByNameQueryOptions(debouncedSearchTerm))
 
-  const updateSearch = (newSearchTerm: string) => {
-    navigate({ 
-      to: '.',
-      search: { q: newSearchTerm, mode: viewMode },
-      replace: true 
-    })
-  }
+// Select which query to display based on view mode
+const activeQuery = viewMode === 'humans' ? humansQuery : orgsQuery
+const { data: users, isLoading, error, isFetching } = activeQuery
 
-  const updateViewMode = (newMode: ViewMode) => {
-    navigate({ 
-      to: '.',
-      search: { q: searchTerm, mode: newMode },
-      replace: true 
-    })
-  }
+const updateSearch = (newSearchTerm: string) => {
+navigate({
+to: '.',
+search: { q: newSearchTerm, mode: viewMode },
+replace: true
+})
+}
 
-  return (
-    <Layout>
-      <Card className='h-full md:w-md'>
-        <CardHeader className='relative'>
-          <Search size={16} className='absolute top-4 left-4'/>
-          <Input 
-            className='pl-7'
-            autoFocus
-            placeholder={`Search ${viewMode}...`}
-            value={searchTerm}
-            onChange={(e) => updateSearch(e.target.value)}
-          />
-        </CardHeader>
-        
+const updateViewMode = (newMode: ViewMode) => {
+navigate({
+to: '.',
+search: { q: searchTerm, mode: newMode },
+replace: true
+})
+}
+
+return (
+<Layout>
+<Card className='h-full md:w-md'>
+<CardHeader className='relative'>
+<Search size={16} className='absolute top-4 left-4'/>
+<Input
+className='pl-7'
+autoFocus
+placeholder={`Search ${viewMode}...`}
+value={searchTerm}
+onChange={(e) => updateSearch(e.target.value)}
+/>
+</CardHeader>
+
         <CardContent>
           {(isLoading || isFetching) && debouncedSearchTerm.length > 1 ? (
             <div className='h-full w-full flex items-center justify-center'>
@@ -81,9 +81,9 @@ function RouteComponent() {
                 <div
                   key={user.id}
                   className='p-2 border border-border cursor-pointer hover:bg-accent'
-                  onClick={() => navigate({ 
-                    to: '/user/$name', 
-                    params: { name: user.name } 
+                  onClick={() => navigate({
+                    to: '/user/$name',
+                    params: { name: user.name }
                   })}
                 >
                   {user.name}
@@ -94,15 +94,15 @@ function RouteComponent() {
             <p>No {viewMode} found</p>
           )}
         </CardContent>
-        
+
         <CardFooter className='flex gap-2'>
-          <Button 
+          <Button
             className={`w-full ${viewMode === 'humans' && 'opacity-50 pointer-events-none'}`}
             onClick={() => updateViewMode('humans')}
           >
             People
           </Button>
-          <Button 
+          <Button
             className={`w-full ${viewMode === 'organizations' && 'opacity-50 pointer-events-none'}`}
             onClick={() => updateViewMode('organizations')}
           >
@@ -111,5 +111,6 @@ function RouteComponent() {
         </CardFooter>
       </Card>
     </Layout>
-  )
+
+)
 }

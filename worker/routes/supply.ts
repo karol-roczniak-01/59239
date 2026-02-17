@@ -1,16 +1,17 @@
-import { Hono } from 'hono';
-import { z } from 'zod';
-import { v4 as uuidv4 } from 'uuid';
-import { 
-  supplyIdSchema, 
-  demandIdSchema,
-  userIdSchema,
+import { Hono } from 'hono'
+import { z } from 'zod'
+import { v4 as uuidv4 } from 'uuid'
+import {
+  
   createSupplySchema,
-  type Supply 
-} from '../schemas/supplySchema';
-import type { Env } from '..';
+  demandIdSchema,
+  supplyIdSchema,
+  userIdSchema
+} from '../schemas/supplySchema'
+import type {Supply} from '../schemas/supplySchema';
+import type { Env } from '..'
 
-const supply = new Hono<{ Bindings: Env }>();
+const supply = new Hono<{ Bindings: Env }>()
 
 // ============================================================================
 // HELPER: Handle Zod Errors
@@ -19,72 +20,81 @@ const handleZodError = (error: unknown) => {
   if (error instanceof z.ZodError) {
     return {
       error: error.issues[0].message,
-      status: 400 as const
-    };
+      status: 400 as const,
+    }
   }
-  return null;
-};
+  return null
+}
 
 // ============================================================================
 // HELPER: Verify User Exists in MOTHER_DB
 // ============================================================================
 const verifyUserExists = async (userId: string, env: Env): Promise<boolean> => {
-  const user = await env.MOTHER_DB
-    .prepare('SELECT id FROM users WHERE id = ?')
+  const user = await env.MOTHER_DB.prepare('SELECT id FROM users WHERE id = ?')
     .bind(userId)
-    .first();
-  
-  return !!user;
-};
+    .first()
+
+  return !!user
+}
 
 // ============================================================================
 // HELPER: Verify Demand Exists in DB
 // ============================================================================
-const verifyDemandExists = async (demandId: string, env: Env): Promise<{ exists: boolean; endingAt?: number }> => {
-  const demand = await env.DB
-    .prepare('SELECT id, endingAt FROM demand WHERE id = ?')
+const verifyDemandExists = async (
+  demandId: string,
+  env: Env,
+): Promise<{ exists: boolean; endingAt?: number }> => {
+  const demand = await env.DB.prepare(
+    'SELECT id, endingAt FROM demand WHERE id = ?',
+  )
     .bind(demandId)
-    .first<{ id: string; endingAt: number }>();
-  
+    .first<{ id: string; endingAt: number }>()
+
   if (!demand) {
-    return { exists: false };
+    return { exists: false }
   }
-  
-  return { exists: true, endingAt: demand.endingAt };
-};
+
+  return { exists: true, endingAt: demand.endingAt }
+}
 
 // ============================================================================
 // CREATE SUPPLY (Authenticated + Payment Required)
 // ============================================================================
 const createSupplyWithPaymentSchema = createSupplySchema.extend({
-  paymentIntentId: z.string().min(1, 'Payment Intent ID is required')
-});
+  paymentIntentId: z.string().min(1, 'Payment Intent ID is required'),
+})
 
 supply.post('/api/supply', async (c) => {
   try {
-    const body = await c.req.json();
-    
+    const body = await c.req.json()
+
     // Validate input (now includes paymentIntentId, phone is optional)
-    const validatedInput = createSupplyWithPaymentSchema.parse(body);
+    const validatedInput = createSupplyWithPaymentSchema.parse(body)
 
     // Verify user exists in MOTHER_DB
-    const userExists = await verifyUserExists(validatedInput.userId, c.env);
-    
+    const userExists = await verifyUserExists(validatedInput.userId, c.env)
+
     if (!userExists) {
-      return c.json({ error: 'User not found' }, 404);
+      return c.json({ error: 'User not found' }, 404)
     }
 
     // Verify demand exists and get its endingAt
-    const demandCheck = await verifyDemandExists(validatedInput.demandId, c.env);
-    
+    const demandCheck = await verifyDemandExists(validatedInput.demandId, c.env)
+
     if (!demandCheck.exists) {
-      return c.json({ error: 'Demand not found' }, 404);
+      return c.json({ error: 'Demand not found' }, 404)
     }
 
     // Check if demand is expired
-    const currentTime = Math.floor(Date.now() / 1000);
+    const currentTime = Math.floor(Date.now() / 1000)
     if (currentTime > demandCheck.endingAt!) {
-      return c.json({ error: 'This demand has expired and is no longer accepting applications' }, 400);
+      return c.json(
+        {
+          error:
+            'This demand has expired and is no longer accepting applications',
+        },
+        400,
+      )
     }
 
     // Verify payment with Stripe
@@ -92,210 +102,213 @@ supply.post('/api/supply', async (c) => {
       `https://api.stripe.com/v1/payment_intents/${validatedInput.paymentIntentId}`,
       {
         headers: {
-          'Authorization': `Bearer ${c.env.STRIPE_SECRET_KEY}`,
+          Authorization: `Bearer ${c.env.STRIPE_SECRET_KEY}`,
         },
-      }
-    );
+      },
+    )
 
     if (!paymentResponse.ok) {
-      return c.json({ error: 'Payment verification failed' }, 400);
+      return c.json({ error: 'Payment verification failed' }, 400)
     }
 
-    const paymentIntent = await paymentResponse.json();
+    const paymentIntent = await paymentResponse.json()
 
     // Check payment status
     if (paymentIntent.status !== 'succeeded') {
-      return c.json({ error: 'Payment not completed' }, 400);
+      return c.json({ error: 'Payment not completed' }, 400)
     }
 
     // Verify payment matches the demand
     if (paymentIntent.metadata.demandId !== validatedInput.demandId) {
-      return c.json({ error: 'Payment does not match demand' }, 400);
+      return c.json({ error: 'Payment does not match demand' }, 400)
     }
 
     // Check if this payment was already used
-    const existingSupply = await c.env.DB
-      .prepare('SELECT id FROM supply WHERE paymentIntentId = ?')
+    const existingSupply = await c.env.DB.prepare(
+      'SELECT id FROM supply WHERE paymentIntentId = ?',
+    )
       .bind(validatedInput.paymentIntentId)
-      .first();
+      .first()
 
     if (existingSupply) {
-      return c.json({ error: 'Payment already used' }, 409);
+      return c.json({ error: 'Payment already used' }, 409)
     }
 
     // Generate UUID for the supply
-    const id = uuidv4();
+    const id = uuidv4()
 
     // Insert into D1 with paymentIntentId - use empty string if phone not provided
-    const createdAt = Math.floor(Date.now() / 1000);
-    const result = await c.env.DB
-      .prepare(`
+    const createdAt = Math.floor(Date.now() / 1000)
+    const result = await c.env.DB.prepare(
+      `
         INSERT INTO supply 
         (id, demandId, userId, content, email, phone, paymentIntentId, createdAt) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?) 
         RETURNING *
-      `)
+      `,
+    )
       .bind(
         id,
-        validatedInput.demandId, 
-        validatedInput.userId, 
-        validatedInput.content, 
-        validatedInput.email, 
+        validatedInput.demandId,
+        validatedInput.userId,
+        validatedInput.content,
+        validatedInput.email,
         validatedInput.phone || '',
         validatedInput.paymentIntentId,
-        createdAt
+        createdAt,
       )
-      .first<Supply>();
+      .first<Supply>()
 
     if (!result) {
-      throw new Error('Failed to create supply');
+      throw new Error('Failed to create supply')
     }
 
-    return c.json({ supply: result }, 201);
+    return c.json({ supply: result }, 201)
   } catch (error) {
-    const zodError = handleZodError(error);
+    const zodError = handleZodError(error)
     if (zodError) {
-      return c.json({ error: zodError.error }, zodError.status);
+      return c.json({ error: zodError.error }, zodError.status)
     }
 
     // Handle unique constraint violation
     if (error instanceof Error && error.message.includes('UNIQUE constraint')) {
-      return c.json({ error: 'You have already supplied to this demand' }, 409);
+      return c.json({ error: 'You have already supplied to this demand' }, 409)
     }
-    
-    console.error('[Create Supply] Error:', error);
-    return c.json({ error: 'Failed to create supply' }, 500);
+
+    console.error('[Create Supply] Error:', error)
+    return c.json({ error: 'Failed to create supply' }, 500)
   }
-});
+})
 
 // ============================================================================
 // GET SUPPLIES BY DEMAND ID
 // ============================================================================
 supply.get('/api/supply/demand/:demandId', async (c) => {
   try {
-    const demandId = c.req.param('demandId');
+    const demandId = c.req.param('demandId')
 
     // Validate demand ID
-    const validatedDemandId = demandIdSchema.parse(demandId);
+    const validatedDemandId = demandIdSchema.parse(demandId)
 
     // Verify demand exists
-    const demandCheck = await verifyDemandExists(validatedDemandId, c.env);
-    
+    const demandCheck = await verifyDemandExists(validatedDemandId, c.env)
+
     if (!demandCheck.exists) {
-      return c.json({ error: 'Demand not found' }, 404);
+      return c.json({ error: 'Demand not found' }, 404)
     }
 
     // Query supplies by demand ID
-    const result = await c.env.DB
-      .prepare('SELECT * FROM supply WHERE demandId = ? ORDER BY createdAt DESC')
+    const result = await c.env.DB.prepare(
+      'SELECT * FROM supply WHERE demandId = ? ORDER BY createdAt DESC',
+    )
       .bind(validatedDemandId)
-      .all();
+      .all()
 
-    return c.json({ 
-      supply: result.results as Supply[],
-      count: result.results.length
-    });
+    return c.json({
+      supply: result.results as Array<Supply>,
+      count: result.results.length,
+    })
   } catch (error) {
-    const zodError = handleZodError(error);
+    const zodError = handleZodError(error)
     if (zodError) {
-      return c.json({ error: zodError.error }, zodError.status);
+      return c.json({ error: zodError.error }, zodError.status)
     }
-    
-    console.error('[Get Supplies By Demand ID] Error:', error);
-    return c.json({ error: 'Failed to retrieve supplies' }, 500);
+
+    console.error('[Get Supplies By Demand ID] Error:', error)
+    return c.json({ error: 'Failed to retrieve supplies' }, 500)
   }
-});
+})
 
 // ============================================================================
 // GET SUPPLIES BY USER ID
 // ============================================================================
 supply.get('/api/supply/user/:userId', async (c) => {
   try {
-    const userId = c.req.param('userId');
+    const userId = c.req.param('userId')
 
     // Validate user ID
-    const validatedUserId = userIdSchema.parse(userId);
+    const validatedUserId = userIdSchema.parse(userId)
 
     // Verify user exists in MOTHER_DB
-    const userExists = await verifyUserExists(validatedUserId, c.env);
-    
+    const userExists = await verifyUserExists(validatedUserId, c.env)
+
     if (!userExists) {
-      return c.json({ error: 'User not found' }, 404);
+      return c.json({ error: 'User not found' }, 404)
     }
 
     // Query supplies by user ID
-    const result = await c.env.DB
-      .prepare('SELECT * FROM supply WHERE userId = ? ORDER BY createdAt DESC')
+    const result = await c.env.DB.prepare(
+      'SELECT * FROM supply WHERE userId = ? ORDER BY createdAt DESC',
+    )
       .bind(validatedUserId)
-      .all();
+      .all()
 
-    return c.json({ 
-      supply: result.results as Supply[],
-      count: result.results.length
-    });
+    return c.json({
+      supply: result.results as Array<Supply>,
+      count: result.results.length,
+    })
   } catch (error) {
-    const zodError = handleZodError(error);
+    const zodError = handleZodError(error)
     if (zodError) {
-      return c.json({ error: zodError.error }, zodError.status);
+      return c.json({ error: zodError.error }, zodError.status)
     }
-    
-    console.error('[Get Supplies By User ID] Error:', error);
-    return c.json({ error: 'Failed to retrieve supplies' }, 500);
+
+    console.error('[Get Supplies By User ID] Error:', error)
+    return c.json({ error: 'Failed to retrieve supplies' }, 500)
   }
-});
+})
 
 // ============================================================================
 // GET SUPPLY BY ID
 // ============================================================================
 supply.get('/api/supply/:supplyId', async (c) => {
   try {
-    const supplyId = c.req.param('supplyId');
+    const supplyId = c.req.param('supplyId')
 
     // Validate supply ID
-    const validatedSupplyId = supplyIdSchema.parse(supplyId);
+    const validatedSupplyId = supplyIdSchema.parse(supplyId)
 
     // Query supply by ID
-    const result = await c.env.DB
-      .prepare('SELECT * FROM supply WHERE id = ?')
+    const result = await c.env.DB.prepare('SELECT * FROM supply WHERE id = ?')
       .bind(validatedSupplyId)
-      .first<Supply>();
+      .first<Supply>()
 
     if (!result) {
-      return c.json({ error: 'Supply not found' }, 404);
+      return c.json({ error: 'Supply not found' }, 404)
     }
 
-    return c.json({ supply: result });
+    return c.json({ supply: result })
   } catch (error) {
-    const zodError = handleZodError(error);
+    const zodError = handleZodError(error)
     if (zodError) {
-      return c.json({ error: zodError.error }, zodError.status);
+      return c.json({ error: zodError.error }, zodError.status)
     }
-    
-    console.error('[Get Supply By ID] Error:', error);
-    return c.json({ error: 'Failed to retrieve supply' }, 500);
+
+    console.error('[Get Supply By ID] Error:', error)
+    return c.json({ error: 'Failed to retrieve supply' }, 500)
   }
-});
+})
 
 // ============================================================================
 // GET DEMANDS WHERE USER HAS SUPPLIED
 // ============================================================================
 supply.get('/api/supply/user/:userId/demands', async (c) => {
   try {
-    const userId = c.req.param('userId');
+    const userId = c.req.param('userId')
 
     // Validate user ID
-    const validatedUserId = userIdSchema.parse(userId);
+    const validatedUserId = userIdSchema.parse(userId)
 
     // Verify user exists in MOTHER_DB
-    const userExists = await verifyUserExists(validatedUserId, c.env);
-    
+    const userExists = await verifyUserExists(validatedUserId, c.env)
+
     if (!userExists) {
-      return c.json({ error: 'User not found' }, 404);
+      return c.json({ error: 'User not found' }, 404)
     }
 
     // Query demands where user has supplied, including supply details
-    const result = await c.env.DB
-      .prepare(`
+    const result = await c.env.DB.prepare(
+      `
         SELECT 
           d.*,
           s.id as supplyId,
@@ -305,24 +318,25 @@ supply.get('/api/supply/user/:userId/demands', async (c) => {
         INNER JOIN supply s ON d.id = s.demandId
         WHERE s.userId = ?
         ORDER BY s.createdAt DESC
-      `)
+      `,
+    )
       .bind(validatedUserId)
-      .all();
+      .all()
 
-    return c.json({ 
+    return c.json({
       demands: result.results,
-      count: result.results.length
-    });
+      count: result.results.length,
+    })
   } catch (error) {
-    const zodError = handleZodError(error);
+    const zodError = handleZodError(error)
     if (zodError) {
-      return c.json({ error: zodError.error }, zodError.status);
+      return c.json({ error: zodError.error }, zodError.status)
     }
-    
-    console.error('[Get User Applied Demands] Error:', error);
-    return c.json({ error: 'Failed to retrieve applied demands' }, 500);
+
+    console.error('[Get User Applied Demands] Error:', error)
+    return c.json({ error: 'Failed to retrieve applied demands' }, 500)
   }
-});
+})
 
 // ============================================================================
 // DELETE SUPPLY (Authenticated - user can only delete their own)
@@ -330,43 +344,41 @@ supply.get('/api/supply/user/:userId/demands', async (c) => {
 supply.delete('/api/supply/:supplyId', async (c) => {
   try {
     // TODO: Get userId from authenticated session
-    const userId = 1; // Replace with actual auth
+    const userId = 1 // Replace with actual auth
 
-    const supplyId = c.req.param('supplyId');
+    const supplyId = c.req.param('supplyId')
 
     // Validate supply ID
-    const validatedSupplyId = supplyIdSchema.parse(supplyId);
+    const validatedSupplyId = supplyIdSchema.parse(supplyId)
 
     // Check if supply exists and belongs to user
-    const existing = await c.env.DB
-      .prepare('SELECT * FROM supply WHERE id = ?')
+    const existing = await c.env.DB.prepare('SELECT * FROM supply WHERE id = ?')
       .bind(validatedSupplyId)
-      .first<Supply>();
+      .first<Supply>()
 
     if (!existing) {
-      return c.json({ error: 'Supply not found' }, 404);
+      return c.json({ error: 'Supply not found' }, 404)
     }
 
     if (existing.userId !== userId) {
-      return c.json({ error: 'Unauthorized' }, 403);
+      return c.json({ error: 'Unauthorized' }, 403)
     }
 
     // Delete supply
-    await c.env.DB
-      .prepare('DELETE FROM supply WHERE id = ?')
+    await c.env.DB.prepare('DELETE FROM supply WHERE id = ?')
       .bind(validatedSupplyId)
-      .run();
+      .run()
 
-    return c.json({ success: true });
+    return c.json({ success: true })
   } catch (error) {
-    const zodError = handleZodError(error);
+    const zodError = handleZodError(error)
     if (zodError) {
-      return c.json({ error: zodError.error }, zodError.status);
+      return c.json({ error: zodError.error }, zodError.status)
     }
-    
-    console.error('[Delete Supply] Error:', error);
-    return c.json({ error: 'Failed to delete supply' }, 500);
-  }
-});
 
-export default supply;
+    console.error('[Delete Supply] Error:', error)
+    return c.json({ error: 'Failed to delete supply' }, 500)
+  }
+})
+
+export default supply

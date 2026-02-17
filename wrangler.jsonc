@@ -1,49 +1,47 @@
 {
-	"$schema": "./node_modules/wrangler/config-schema.json",
-	"name": "5-92-39",
-	"compatibility_date": "2025-12-10",
-	"compatibility_flags": [
-		"nodejs_compat"
-	],
-	"main": "worker/index.ts",
-	"observability": {
-		"enabled": true
-	},
-	"assets": {
-		"not_found_handling": "single-page-application"
-	},
-	"vars": {
-		"VITE_STRIPE_PUBLISHABLE_KEY": "pk_live_51RDhtq2K3ab6NXXzO9ozC7MTU6QS0E1HFPSSL0A2M1PinkpQoGqMp4JzjgJOrsEo3PgkrEQHRfTBiQdDavBbxoL900vvGqMeWL"
-	},
-	"d1_databases": [
-		{
-			"binding": "DB",
-			"database_name": "5-92-39",
-			"database_id": "fa9ab3f8-8ac1-489f-9000-40b12c07c3a9",
-			"remote": true
-		},
-		{
-			"binding": "MOTHER_DB",
-			"database_name": "19-18-8-103",
-			"database_id": "0f8637b8-bf97-4087-88b2-e2ca821efc09",
-			"remote": true
-		}
-	],
-	"ai": {
-		"binding": "AI"
-	},
-	"vectorize": [
-		{
-			"binding": "VECTORIZE",
-			"index_name": "demands-index",
-			"remote": true
-		}
-	],
-	"kv_namespaces": [
-		{
-			"binding": "RATE_LIMIT",
-			"id": "25876b043d2f45acb8a12bd6c63d03e8",
-			"remote": true
-		}
-	]
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "5-92-39",
+  "compatibility_date": "2025-12-10",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "worker/index.ts",
+  "observability": {
+    "enabled": true,
+  },
+  "assets": {
+    "not_found_handling": "single-page-application",
+  },
+  "vars": {
+    "VITE_STRIPE_PUBLISHABLE_KEY": "pk_live_51RDhtq2K3ab6NXXzO9ozC7MTU6QS0E1HFPSSL0A2M1PinkpQoGqMp4JzjgJOrsEo3PgkrEQHRfTBiQdDavBbxoL900vvGqMeWL",
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "5-92-39",
+      "database_id": "fa9ab3f8-8ac1-489f-9000-40b12c07c3a9",
+      "remote": true,
+    },
+    {
+      "binding": "MOTHER_DB",
+      "database_name": "19-18-8-103",
+      "database_id": "0f8637b8-bf97-4087-88b2-e2ca821efc09",
+      "remote": true,
+    },
+  ],
+  "ai": {
+    "binding": "AI",
+  },
+  "vectorize": [
+    {
+      "binding": "VECTORIZE",
+      "index_name": "demands-index",
+      "remote": true,
+    },
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "RATE_LIMIT",
+      "id": "25876b043d2f45acb8a12bd6c63d03e8",
+      "remote": true,
+    },
+  ],
 }

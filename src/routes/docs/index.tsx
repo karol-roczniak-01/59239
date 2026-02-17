@@ -1,9 +1,9 @@
-import Layout from '@/components/Layout';
-import Loader from '@/components/Loader'
-import Menu from '@/components/Menu';
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { FileQuestion, HatGlasses, Section } from 'lucide-react';
-import { useState } from 'react';
+import { FileQuestion, HatGlasses, Section } from 'lucide-react'
+import { useState } from 'react'
+import Layout from '@/components/Layout'
+import Loader from '@/components/Loader'
+import Menu from '@/components/Menu'
 
 export const Route = createFileRoute('/docs/')({
   pendingComponent: () => <Loader />,
@@ -11,21 +11,21 @@ export const Route = createFileRoute('/docs/')({
 })
 
 function RouteComponent() {
-  const navigate = useNavigate();
-  const [_lastSelected, setLastSelected] = useState<string>('');
+  const navigate = useNavigate()
+  const [_lastSelected, setLastSelected] = useState<string>('')
 
   const docsOptions = [
     { label: 'Guide', path: '/docs/guide', icon: FileQuestion },
     { label: 'Terms', path: '/docs/terms', icon: Section },
-    { label: 'Privacy', path: '/docs/privacy', icon: HatGlasses }
+    { label: 'Privacy', path: '/docs/privacy', icon: HatGlasses },
   ]
 
   return (
     <Layout>
-      <Menu 
+      <Menu
         options={docsOptions}
         onSelect={(option, index) => {
-        setLastSelected(`${option.label} (${index})`);
+          setLastSelected(`${option.label} (${index})`)
           if (option.path) {
             navigate({ to: option.path })
           }

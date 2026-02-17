@@ -1,5 +1,5 @@
+import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 import Loader from '@/components/Loader'
-import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authenticated')({
   pendingComponent: () => <Loader />,

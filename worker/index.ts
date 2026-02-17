@@ -1,35 +1,38 @@
-import { Ai, D1Database, VectorizeIndex, type KVNamespace } from '@cloudflare/workers-types';
-import { Hono } from 'hono';
-import auth from './routes/auth';
-import users from './routes/users';
-import demand from './routes/demand';
-import supply from './routes/supply';
-import payment from './routes/payment';
+import { Hono } from 'hono'
+import auth from './routes/auth'
+import users from './routes/users'
+import demand from './routes/demand'
+import supply from './routes/supply'
+import payment from './routes/payment'
+import type {Ai,
+  D1Database,
+  KVNamespace,
+  VectorizeIndex} from '@cloudflare/workers-types';
 
 export type Env = {
-  MOTHER_DB: D1Database,
-  DB: D1Database;
-  AI: Ai;
-  VECTORIZE: VectorizeIndex;
-  RATE_LIMIT: KVNamespace;
-  JWT_SECRET_KEY: string;
-  STRIPE_SECRET_KEY: string;
-};
+  MOTHER_DB: D1Database
+  DB: D1Database
+  AI: Ai
+  VECTORIZE: VectorizeIndex
+  RATE_LIMIT: KVNamespace
+  JWT_SECRET_KEY: string
+  STRIPE_SECRET_KEY: string
+}
 
 export type Variables = {
   user?: {
-    userId: string;
-    email: string;
-    type: string;
-  };
-};
+    userId: string
+    email: string
+    type: string
+  }
+}
 
-const app = new Hono<{ Bindings: Env; Variables: Variables }>
+const app = new Hono<{ Bindings: Env; Variables: Variables }>()
 
-app.route('/', auth);
-app.route('/', users);
-app.route('/', demand);
-app.route('/', supply);
-app.route('/', payment);
+app.route('/', auth)
+app.route('/', users)
+app.route('/', demand)
+app.route('/', supply)
+app.route('/', payment)
 
-export default app;
+export default app
