@@ -18,7 +18,6 @@ import type {
   SignupData,
   User,
 } from '../utils/types'
-import Layout from '@/components/Layout'
 import Loader from '@/components/Loader'
 
 const Auth = createContext<AuthContext | null>(null)
