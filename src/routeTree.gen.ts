@@ -10,14 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as CreateAccountRouteImport } from './routes/create-account'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DocsIndexRouteImport } from './routes/docs/index'
 import { Route as DocsTermsRouteImport } from './routes/docs/terms'
 import { Route as DocsPrivacyRouteImport } from './routes/docs/privacy'
 import { Route as DocsGuideRouteImport } from './routes/docs/guide'
-import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedSupplyIndexRouteImport } from './routes/_authenticated/supply/index'
 import { Route as AuthenticatedDemandIndexRouteImport } from './routes/_authenticated/demand/index'
 import { Route as AuthenticatedSupplyNewRouteImport } from './routes/_authenticated/supply/new'
@@ -27,11 +25,6 @@ import { Route as AuthenticatedDemandDemandIdRouteImport } from './routes/_authe
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CreateAccountRoute = CreateAccountRouteImport.update({
-  id: '/create-account',
-  path: '/create-account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -62,11 +55,6 @@ const DocsGuideRoute = DocsGuideRouteImport.update({
   id: '/docs/guide',
   path: '/docs/guide',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
-  id: '/me',
-  path: '/me',
-  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedSupplyIndexRoute =
   AuthenticatedSupplyIndexRouteImport.update({
@@ -99,9 +87,7 @@ const AuthenticatedDemandDemandIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/create-account': typeof CreateAccountRoute
   '/login': typeof LoginRoute
-  '/me': typeof AuthenticatedMeRoute
   '/docs/guide': typeof DocsGuideRoute
   '/docs/privacy': typeof DocsPrivacyRoute
   '/docs/terms': typeof DocsTermsRoute
@@ -114,9 +100,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/create-account': typeof CreateAccountRoute
   '/login': typeof LoginRoute
-  '/me': typeof AuthenticatedMeRoute
   '/docs/guide': typeof DocsGuideRoute
   '/docs/privacy': typeof DocsPrivacyRoute
   '/docs/terms': typeof DocsTermsRoute
@@ -131,9 +115,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
-  '/create-account': typeof CreateAccountRoute
   '/login': typeof LoginRoute
-  '/_authenticated/me': typeof AuthenticatedMeRoute
   '/docs/guide': typeof DocsGuideRoute
   '/docs/privacy': typeof DocsPrivacyRoute
   '/docs/terms': typeof DocsTermsRoute
@@ -148,9 +130,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/create-account'
     | '/login'
-    | '/me'
     | '/docs/guide'
     | '/docs/privacy'
     | '/docs/terms'
@@ -163,9 +143,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/create-account'
     | '/login'
-    | '/me'
     | '/docs/guide'
     | '/docs/privacy'
     | '/docs/terms'
@@ -179,9 +157,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
-    | '/create-account'
     | '/login'
-    | '/_authenticated/me'
     | '/docs/guide'
     | '/docs/privacy'
     | '/docs/terms'
@@ -196,7 +172,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
-  CreateAccountRoute: typeof CreateAccountRoute
   LoginRoute: typeof LoginRoute
   DocsGuideRoute: typeof DocsGuideRoute
   DocsPrivacyRoute: typeof DocsPrivacyRoute
@@ -211,13 +186,6 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/create-account': {
-      id: '/create-account'
-      path: '/create-account'
-      fullPath: '/create-account'
-      preLoaderRoute: typeof CreateAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -262,13 +230,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocsGuideRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/me': {
-      id: '/_authenticated/me'
-      path: '/me'
-      fullPath: '/me'
-      preLoaderRoute: typeof AuthenticatedMeRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/supply/': {
       id: '/_authenticated/supply/'
       path: '/supply'
@@ -308,7 +269,6 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedDemandDemandIdRoute: typeof AuthenticatedDemandDemandIdRoute
   AuthenticatedDemandNewRoute: typeof AuthenticatedDemandNewRoute
   AuthenticatedSupplyNewRoute: typeof AuthenticatedSupplyNewRoute
@@ -317,7 +277,6 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedDemandDemandIdRoute: AuthenticatedDemandDemandIdRoute,
   AuthenticatedDemandNewRoute: AuthenticatedDemandNewRoute,
   AuthenticatedSupplyNewRoute: AuthenticatedSupplyNewRoute,
@@ -332,7 +291,6 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
-  CreateAccountRoute: CreateAccountRoute,
   LoginRoute: LoginRoute,
   DocsGuideRoute: DocsGuideRoute,
   DocsPrivacyRoute: DocsPrivacyRoute,

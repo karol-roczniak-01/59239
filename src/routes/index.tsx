@@ -27,17 +27,20 @@ function RouteComponent() {
     navigate({ to: '/' })
   }
 
+  const handleCreateAccount = () => {
+    window.location.href = 'https://5395.19188103.com/create-account'
+  }
+
   const authorizedOptions = [
     { label: 'Demand', path: '/demand', icon: BadgeDollarSign },
     { label: 'Supply', path: '/supply', icon: Factory },
-    { label: 'Me', path: '/me', icon: User },
     { label: 'Docs', path: '/docs', icon: FileText },
-    { label: 'Logout', icon: LogOut, onSelect: handleLogout },
+    { label: 'Log Out', icon: LogOut, onSelect: handleLogout },
   ]
 
   const unauthorizedOptions = [
-    { label: 'Create Account', path: '/create-account', icon: UserPlus },
     { label: 'Log In', path: '/login', icon: User },
+    { label: 'Create Account', onSelect: handleCreateAccount, icon: UserPlus },
     { label: 'Docs', path: '/docs', icon: FileText },
   ]
 

@@ -5,14 +5,6 @@ export interface LoginCredentials {
   password: string
 }
 
-export interface SignupData {
-  id: string // UUID
-  username: string
-  fullName: string
-  email: string
-  password: string
-}
-
 export interface UsernameAvailability {
   available: boolean
   reason?: string
@@ -21,13 +13,6 @@ export interface UsernameAvailability {
 export interface AuthContext {
   user: User | null
   login: (email: string, password: string) => Promise<void>
-  signup: (
-    id: string,
-    username: string,
-    fullName: string,
-    email: string,
-    password: string,
-  ) => Promise<void>
   logout: () => void
   isLoading: boolean
 }

@@ -3,12 +3,8 @@ import bcrypt from 'bcryptjs'
 import { SignJWT, jwtVerify } from 'jose'
 import { z } from 'zod'
 import {
-  
-  
-  
   jwtPayloadSchema,
   loginSchema,
-  signupSchema
 } from '../schemas/authSchema'
 import type {ApiAuthUser, DbAuthUser, JwtPayload} from '../schemas/authSchema';
 import type {Env, Variables} from '../index';
@@ -17,7 +13,6 @@ const auth = new Hono<{ Bindings: Env; Variables: Variables }>()
 
 // Constants
 const JWT_EXPIRATION = '7d'
-const BCRYPT_ROUNDS = 10
 const COOKIE_NAME = 'auth_token'
 
 // ============================================================================
@@ -152,73 +147,9 @@ auth.get('/api/users/check-username/:username', async (c) => {
 })
 
 // ============================================================================
-// SIGN UP
+// SIGN UP - There is no sign up here, only in 53-95 app
 // ============================================================================
-auth.post('/api/users/signup', async (c) => {
-  try {
-    const body = await c.req.json()
 
-    // Validate and sanitize with Zod
-    const validatedData = signupSchema.parse(body)
-    const { id, username, fullName, email, password } = validatedData
-
-    // Check for existing user
-    const existing = await c.env.MOTHER_DB.prepare(
-      'SELECT id FROM users WHERE email = ? OR username = ?',
-    )
-      .bind(email, username)
-      .first()
-
-    if (existing) {
-      return c.json({ error: 'Email or username already taken' }, 409)
-    }
-
-    // Hash password with bcrypt
-    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS)
-
-    // Insert new user with provided UUID
-    await c.env.MOTHER_DB.prepare(
-      'INSERT INTO users (id, username, fullName, email, passwordHash, verified) VALUES (?, ?, ?, ?, ?, ?)',
-    )
-      .bind(id, username, fullName, email, passwordHash, 0)
-      .run()
-
-    // Create JWT token
-    const jwtSecret = new TextEncoder().encode(c.env.JWT_SECRET_KEY)
-    const token = await new SignJWT({ userId: id, email })
-      .setProtectedHeader({ alg: 'HS256' })
-      .setIssuedAt()
-      .setExpirationTime(JWT_EXPIRATION)
-      .sign(jwtSecret)
-
-    // Set httpOnly cookie
-    setAuthCookie(c, token)
-
-    return c.json(
-      {
-        message: 'Account created successfully',
-        user: { id, username, fullName, email, verified: false },
-      },
-      201,
-    )
-  } catch (error) {
-    const zodError = handleZodError(error)
-    if (zodError) {
-      return c.json({ error: zodError.error }, zodError.status)
-    }
-
-    console.error('[Signup] Error:', error)
-
-    if (
-      error instanceof Error &&
-      error.message.includes('UNIQUE constraint failed')
-    ) {
-      return c.json({ error: 'Email or username already taken' }, 409)
-    }
-
-    return c.json({ error: 'Failed to create account' }, 500)
-  }
-})
 
 // ============================================================================
 // LOGIN

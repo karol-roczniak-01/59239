@@ -37,7 +37,7 @@ export const fullNameSchema = z
 // Email schema
 export const emailSchema = z
   .string()
-  .email('Invalid email format')
+  z.email('Invalid email format')
   .min(1, 'Email is required')
   .trim()
   .transform((val) => val.toLowerCase())
@@ -62,15 +62,6 @@ export const idSchema = z.string().uuid('Invalid user ID')
 // ============================================================================
 // REQUEST BODY SCHEMAS
 // ============================================================================
-
-// Signup request schema
-export const signupSchema = z.object({
-  id: idSchema,
-  username: usernameSchema,
-  fullName: fullNameSchema,
-  email: emailSchema,
-  password: passwordSchema,
-})
 
 // Login request schema
 export const loginSchema = z.object({
@@ -113,7 +104,6 @@ export const jwtPayloadSchema = z.object({
 // TYPES
 // ============================================================================
 
-export type SignupInput = z.infer<typeof signupSchema>
 export type LoginInput = z.infer<typeof loginSchema>
 export type DbAuthUser = z.infer<typeof dbAuthUserSchema>
 export type ApiAuthUser = z.infer<typeof apiAuthUserSchema>

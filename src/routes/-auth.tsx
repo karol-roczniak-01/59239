@@ -1,5 +1,4 @@
 import {
-  
   createContext,
   useContext,
   useEffect,
@@ -9,13 +8,11 @@ import {
   fetchCurrentUser,
   loginUser,
   logoutUser,
-  signupUser,
 } from '../hooks/useAuth'
 import type {ReactNode} from 'react';
 import type {
   AuthContext,
   LoginCredentials,
-  SignupData,
   User,
 } from '../utils/types'
 import Loader from '@/components/Loader'
@@ -42,20 +39,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.location.href = '/'
   }
 
-  const signup = async (
-    id: string,
-    username: string,
-    fullName: string,
-    email: string,
-    password: string,
-  ) => {
-    const signupData: SignupData = { id, username, fullName, email, password }
-    const user = await signupUser(signupData)
-    setUser(user)
-    // Force a full page reload to ensure all route loaders run with new auth state
-    window.location.href = '/'
-  }
-
   const logout = async () => {
     try {
       await logoutUser()
@@ -69,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <Auth.Provider value={{ user, login, signup, logout, isLoading }}>
+    <Auth.Provider value={{ user, login, logout, isLoading }}>
       {isLoading ? (
         <div className='h-dvh w-full flex items-center justify-center'>
           <Loader />
