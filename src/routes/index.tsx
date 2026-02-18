@@ -27,8 +27,8 @@ function RouteComponent() {
     navigate({ to: '/' })
   }
 
-  const handleCreateAccount = () => {
-    window.location.href = 'https://5395.19188103.com/create-account'
+  const handleJoin = () => {
+    window.location.href = 'https://5395.19188103.com/join'
   }
 
   const authorizedOptions = [
@@ -40,7 +40,7 @@ function RouteComponent() {
 
   const unauthorizedOptions = [
     { label: 'Log In', path: '/login', icon: User },
-    { label: 'Create Account', onSelect: handleCreateAccount, icon: UserPlus },
+    { label: 'Join', onSelect: handleJoin, icon: UserPlus },
     { label: 'Docs', path: '/docs', icon: FileText },
   ]
 
