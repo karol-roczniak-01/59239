@@ -14,24 +14,30 @@ const auth = new Hono<{ Bindings: Env; Variables: Variables }>()
 // Constants
 const JWT_EXPIRATION = '7d'
 const COOKIE_NAME = 'auth_token'
+const isProduction = import.meta.env.PROD
 
 // ============================================================================
 // HELPER: Set Secure Cookie
 // ============================================================================
 const setAuthCookie = (c: any, token: string) => {
+  const cookieFlags = isProduction
+    ? 'HttpOnly; Secure; SameSite=Lax; Domain=.19188103.com'
+    : 'HttpOnly; SameSite=Lax'
+
   c.header(
     'Set-Cookie',
-    `${COOKIE_NAME}=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${7 * 24 * 60 * 60}`,
+    `${COOKIE_NAME}=${token}; ${cookieFlags}; Path=/; Max-Age=${7 * 24 * 60 * 60}`,
   )
 }
 
-// ============================================================================
-// HELPER: Clear Cookie
-// ============================================================================
 const clearAuthCookie = (c: any) => {
+  const cookieFlags = isProduction
+    ? 'HttpOnly; Secure; SameSite=Lax; Domain=.19188103.com'
+    : 'HttpOnly; SameSite=Lax'
+
   c.header(
     'Set-Cookie',
-    `${COOKIE_NAME}=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0`,
+    `${COOKIE_NAME}=; ${cookieFlags}; Path=/; Max-Age=0`,
   )
 }
 
