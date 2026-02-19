@@ -25,7 +25,7 @@ interface CardFooterProps {
 
 const Card = ({ children, className, asForm = false, onSubmit }: CardProps) => {
   const baseClassName = twMerge(
-    'md:w-md w-full h-fit max-h-full flex flex-col border-primary border',
+    'md:w-sm w-full h-fit max-h-full flex flex-col border-primary border',
     className,
   )
 

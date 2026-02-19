@@ -95,7 +95,6 @@ export const verifyAuth = async (c: any, next: any) => {
     const token = cookies[COOKIE_NAME]
 
     if (!token) {
-      console.log('[verifyAuth] No token - returning 401')
       return c.json({ error: 'Unauthorized' }, 401)
     }
 

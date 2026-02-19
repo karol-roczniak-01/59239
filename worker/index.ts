@@ -1,13 +1,14 @@
 import { Hono } from 'hono'
 import auth from './routes/auth'
-import users from './routes/users'
 import demand from './routes/demand'
 import supply from './routes/supply'
 import payment from './routes/payment'
-import type {Ai,
+import type {
+  Ai,
   D1Database,
   KVNamespace,
-  VectorizeIndex} from '@cloudflare/workers-types';
+  VectorizeIndex
+} from '@cloudflare/workers-types';
 
 export type Env = {
   MOTHER_DB: D1Database
@@ -30,7 +31,6 @@ export type Variables = {
 const app = new Hono<{ Bindings: Env; Variables: Variables }>()
 
 app.route('/', auth)
-app.route('/', users)
 app.route('/', demand)
 app.route('/', supply)
 app.route('/', payment)

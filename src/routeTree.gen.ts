@@ -12,10 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DocsIndexRouteImport } from './routes/docs/index'
-import { Route as DocsTermsRouteImport } from './routes/docs/terms'
-import { Route as DocsPrivacyRouteImport } from './routes/docs/privacy'
-import { Route as DocsGuideRouteImport } from './routes/docs/guide'
 import { Route as AuthenticatedSupplyIndexRouteImport } from './routes/_authenticated/supply/index'
 import { Route as AuthenticatedDemandIndexRouteImport } from './routes/_authenticated/demand/index'
 import { Route as AuthenticatedSupplyNewRouteImport } from './routes/_authenticated/supply/new'
@@ -34,26 +30,6 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsIndexRoute = DocsIndexRouteImport.update({
-  id: '/docs/',
-  path: '/docs/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsTermsRoute = DocsTermsRouteImport.update({
-  id: '/docs/terms',
-  path: '/docs/terms',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsPrivacyRoute = DocsPrivacyRouteImport.update({
-  id: '/docs/privacy',
-  path: '/docs/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsGuideRoute = DocsGuideRouteImport.update({
-  id: '/docs/guide',
-  path: '/docs/guide',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSupplyIndexRoute =
@@ -88,10 +64,6 @@ const AuthenticatedDemandDemandIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/docs/guide': typeof DocsGuideRoute
-  '/docs/privacy': typeof DocsPrivacyRoute
-  '/docs/terms': typeof DocsTermsRoute
-  '/docs/': typeof DocsIndexRoute
   '/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
   '/demand/new': typeof AuthenticatedDemandNewRoute
   '/supply/new': typeof AuthenticatedSupplyNewRoute
@@ -101,10 +73,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/docs/guide': typeof DocsGuideRoute
-  '/docs/privacy': typeof DocsPrivacyRoute
-  '/docs/terms': typeof DocsTermsRoute
-  '/docs': typeof DocsIndexRoute
   '/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
   '/demand/new': typeof AuthenticatedDemandNewRoute
   '/supply/new': typeof AuthenticatedSupplyNewRoute
@@ -116,10 +84,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
-  '/docs/guide': typeof DocsGuideRoute
-  '/docs/privacy': typeof DocsPrivacyRoute
-  '/docs/terms': typeof DocsTermsRoute
-  '/docs/': typeof DocsIndexRoute
   '/_authenticated/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
   '/_authenticated/demand/new': typeof AuthenticatedDemandNewRoute
   '/_authenticated/supply/new': typeof AuthenticatedSupplyNewRoute
@@ -131,10 +95,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
-    | '/docs/guide'
-    | '/docs/privacy'
-    | '/docs/terms'
-    | '/docs/'
     | '/demand/$demandId'
     | '/demand/new'
     | '/supply/new'
@@ -144,10 +104,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
-    | '/docs/guide'
-    | '/docs/privacy'
-    | '/docs/terms'
-    | '/docs'
     | '/demand/$demandId'
     | '/demand/new'
     | '/supply/new'
@@ -158,10 +114,6 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/login'
-    | '/docs/guide'
-    | '/docs/privacy'
-    | '/docs/terms'
-    | '/docs/'
     | '/_authenticated/demand/$demandId'
     | '/_authenticated/demand/new'
     | '/_authenticated/supply/new'
@@ -173,10 +125,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
-  DocsGuideRoute: typeof DocsGuideRoute
-  DocsPrivacyRoute: typeof DocsPrivacyRoute
-  DocsTermsRoute: typeof DocsTermsRoute
-  DocsIndexRoute: typeof DocsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -200,34 +148,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/': {
-      id: '/docs/'
-      path: '/docs'
-      fullPath: '/docs/'
-      preLoaderRoute: typeof DocsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/terms': {
-      id: '/docs/terms'
-      path: '/docs/terms'
-      fullPath: '/docs/terms'
-      preLoaderRoute: typeof DocsTermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/privacy': {
-      id: '/docs/privacy'
-      path: '/docs/privacy'
-      fullPath: '/docs/privacy'
-      preLoaderRoute: typeof DocsPrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/guide': {
-      id: '/docs/guide'
-      path: '/docs/guide'
-      fullPath: '/docs/guide'
-      preLoaderRoute: typeof DocsGuideRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/supply/': {
@@ -292,10 +212,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
-  DocsGuideRoute: DocsGuideRoute,
-  DocsPrivacyRoute: DocsPrivacyRoute,
-  DocsTermsRoute: DocsTermsRoute,
-  DocsIndexRoute: DocsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

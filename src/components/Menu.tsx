@@ -18,6 +18,8 @@ interface MenuProps {
   onSelect?: (option: MenuItem, index: number) => void
   searchable?: boolean
   searchPlaceholder?: string
+  title?: string
+  description?: string
 }
 
 const Menu: React.FC<MenuProps> = ({
@@ -25,6 +27,8 @@ const Menu: React.FC<MenuProps> = ({
   onSelect,
   searchable,
   searchPlaceholder,
+  title,
+  description
 }) => {
   const isMobile = useMobile()
   const [selected, setSelected] = useState(0)
@@ -85,14 +89,22 @@ const Menu: React.FC<MenuProps> = ({
 
   return (
     <Card>
-      {searchable && (
-        <CardHeader>
-          <Input
-            autoFocus={!isMobile}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={searchPlaceholder}
-          />
+      {(searchable || title || description) && (
+        <CardHeader className='gap-2 flex flex-col'>
+          {(title || description) && (
+            <div className='flex flex-col gap-1'>
+              <p>{title}</p>
+              <p className='text-sm opacity-70'>{description}</p>
+            </div>
+          )}
+          {searchable && (
+            <Input
+              autoFocus={!isMobile}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={searchPlaceholder}
+            />
+          )}
         </CardHeader>
       )}
       <CardContent className="space-y-2 text-center">

@@ -3,7 +3,6 @@ import { useState } from 'react'
 import {
   BadgeDollarSign,
   Factory,
-  FileText,
   LogOut,
   User,
   UserPlus,
@@ -34,14 +33,12 @@ function RouteComponent() {
   const authorizedOptions = [
     { label: 'Demand', path: '/demand', icon: BadgeDollarSign },
     { label: 'Supply', path: '/supply', icon: Factory },
-    { label: 'Docs', path: '/docs', icon: FileText },
     { label: 'Log Out', icon: LogOut, onSelect: handleLogout },
   ]
 
   const unauthorizedOptions = [
     { label: 'Log In', path: '/login', icon: User },
     { label: 'Join', onSelect: handleJoin, icon: UserPlus },
-    { label: 'Docs', path: '/docs', icon: FileText },
   ]
 
   if (auth.isLoading) {
@@ -67,6 +64,8 @@ function RouteComponent() {
   return (
     <Layout>
       <Menu
+        title='5-92-39'
+        description='The AI-powered private tender platform connecting businesses with the right suppliers — and suppliers with the right opportunities.'
         options={unauthorizedOptions}
         onSelect={(option, index) => {
           setLastSelected(`${option.label} (${index})`)

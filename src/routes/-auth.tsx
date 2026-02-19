@@ -26,15 +26,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Check for existing session on mount
   useEffect(() => {
     fetchCurrentUser()
-      .then((user) => setUser(user))
+      .then((currentUser) => setUser(currentUser))
       .catch(() => setUser(null))
       .finally(() => setIsLoading(false))
   }, [])
 
   const login = async (email: string, password: string) => {
     const credentials: LoginCredentials = { email, password }
-    const user = await loginUser(credentials)
-    setUser(user)
+    const loggedInUser = await loginUser(credentials)
+    setUser(loggedInUser)
     // Force a full page reload to ensure all route loaders run with new auth state
     window.location.href = '/'
   }
