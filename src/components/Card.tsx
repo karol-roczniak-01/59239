@@ -1,5 +1,5 @@
 import { twMerge } from 'tailwind-merge'
-import type { FormEvent, ReactNode } from 'react'
+import type { ReactNode, SyntheticEvent } from 'react'
 
 interface CardHeaderProps {
   children: ReactNode
@@ -15,7 +15,7 @@ interface CardProps {
   children: ReactNode
   className?: string
   asForm?: boolean
-  onSubmit?: (e: FormEvent<HTMLFormElement>) => void
+  onSubmit?: (e: SyntheticEvent<HTMLFormElement>) => void
 }
 
 interface CardFooterProps {

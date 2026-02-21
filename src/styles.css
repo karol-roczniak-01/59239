@@ -2,10 +2,14 @@
 
 /* Custom variants for different themes */
 @custom-variant dark (&:where(.dark, .dark *));
-@custom-variant light (&:where(.light, .light *));
-@custom-variant ocean (&:where(.ocean, .ocean *));
-@custom-variant forest (&:where(.forest, .forest *));
-@custom-variant sunset (&:where(.sunset, .sunset *));
+@custom-variant light (&:where(.blueprint, .blueprint *));
+
+/* Tell Tailwind to use these CSS vars as theme tokens */
+@theme inline {
+  --color-foreground: var(--color-foreground);
+  --color-background: var(--color-background);
+  --color-primary: var(--color-primary);
+}
 
 /* Global font rendering optimizations */
 * {
@@ -15,39 +19,16 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Default theme (dark mode) */
-@theme {
+:root.dark {
   --color-foreground: oklch(75% 0.183 55.934);
   --color-background: oklch(21.113% 0.01046 39.186);
   --color-primary: oklch(75% 0.183 55.934);
 }
 
-/* Light theme */
-.light {
-  --color-foreground: oklch(20% 0 0);
-  --color-background: oklch(90% 0 0);
-  --color-primary: oklch(62.793% 0.25768 29.223);
-}
-
-/* Ocean theme */
-.ocean {
-  --color-foreground: oklch(95% 0.05 240);
-  --color-background: oklch(25% 0.08 240);
-  --color-primary: oklch(70% 0.15 220);
-}
-
-/* Forest theme */
-.forest {
-  --color-foreground: oklch(90% 0.05 150);
-  --color-background: oklch(20% 0.06 150);
-  --color-primary: oklch(65% 0.18 140);
-}
-
-/* Sunset theme */
-.sunset {
-  --color-foreground: oklch(95% 0.05 40);
-  --color-background: oklch(30% 0.1 30);
-  --color-primary: oklch(75% 0.2 50);
+:root.blueprint {
+  --color-foreground: oklch(93% 0.06 85);
+  --color-background: oklch(35% 0.12 240);
+  --color-primary: oklch(93% 0.06 85);
 }
 
 /* Base body styles */

@@ -11,11 +11,10 @@ import './styles.css'
 import reportWebVitals from './reportWebVitals.ts'
 import { AuthProvider, useAuth } from './routes/-auth.tsx'
 
-// Apply theme immediately to avoid flash
-const savedTheme = localStorage.getItem('theme')
-if (savedTheme === 'light') {
-  document.documentElement.classList.add('dark')
-}
+// Replace the localStorage block with:
+const savedTheme = document.cookie.split('; ').find(r => r.startsWith('theme='))?.split('=')[1]
+if (savedTheme) document.documentElement.classList.add(savedTheme)
+else document.documentElement.classList.add('dark')
 
 const TanStackQueryProviderContext = TanStackQueryProvider.getContext()
 const router = createRouter({
