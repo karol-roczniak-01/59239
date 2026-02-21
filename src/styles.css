@@ -1,9 +1,5 @@
 @import 'tailwindcss';
 
-/* Custom variants for different themes */
-@custom-variant dark (&:where(.dark, .dark *));
-@custom-variant light (&:where(.blueprint, .blueprint *));
-
 /* Tell Tailwind to use these CSS vars as theme tokens */
 @theme inline {
   --color-foreground: var(--color-foreground);
@@ -20,15 +16,31 @@
 }
 
 :root.dark {
+  --color-theme-meta: #1d1715;
   --color-foreground: oklch(75% 0.183 55.934);
   --color-background: oklch(21.113% 0.01046 39.186);
   --color-primary: oklch(75% 0.183 55.934);
 }
 
 :root.blueprint {
+  --color-theme-meta: #003f71;
   --color-foreground: oklch(93% 0.06 85);
   --color-background: oklch(35% 0.12 240);
   --color-primary: oklch(93% 0.06 85);
+}
+
+:root.chalk {
+  --color-theme-meta: #f2f2f2;
+  --color-foreground: oklch(20% 0 0);       
+  --color-background: oklch(96% 0 0);       
+  --color-primary: oklch(20% 0 0);
+}
+
+:root.noir {
+  --color-theme-meta: #060606;
+  --color-foreground: oklch(90% 0 0);     
+  --color-background: oklch(12% 0 0);       
+  --color-primary: oklch(90% 0 0);
 }
 
 /* Base body styles */
