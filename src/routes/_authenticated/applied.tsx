@@ -51,8 +51,18 @@ function RouteComponent() {
                   {isExpired && <span className="opacity-70">[expired]</span>}
                 </div>
                 <div className='grid grid-cols-2 gap-2'>
-                  <p className="opacity-70 wrap-break-word min-w-0">{item.content}</p>
-                  <p className="wrap-break-word min-w-0">{item.supplyContent}</p>
+                  <p className="opacity-70 wrap-break-word min-w-0">
+                    {item.content.length > 128
+                      ? `${item.content.slice(0, 128)}…`
+                      : item.content
+                    }
+                  </p>
+                  <p className="wrap-break-word min-w-0">
+                    {item.supplyContent.length > 128
+                      ? `${item.supplyContent.slice(0, 128)}…`
+                      : item.supplyContent
+                    }
+                  </p>
                 </div>
               </div>
             )

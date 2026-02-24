@@ -134,7 +134,7 @@ function RouteComponent() {
             : `Search — ${currentRateLimit.remaining} left today`}
       </Button>
 
-      <div className=' flex'>
+      <div className=''>
         {(isLoading || isFetching) && urlSearchQuery.length >= 30 ? (
           <div className="h-full w-full flex items-center justify-center">
             <p>Wait...</p>
@@ -149,21 +149,19 @@ function RouteComponent() {
             {validResults.map((result, index) => {
               return (
                 <div 
-                  className='cursor-pointer'
+                  className="cursor-pointer"
                   onClick={() => navigate({ to: `/demand/${result.demand.id}` })}
                 >
-                  <div className='flex items-center'>
-                    <span>
-                      [{index + 1}]
-                    </span>
-                    <span>
-                      [{(result.score * 100).toFixed(2)}%]
-                    </span>
+                  <div className="flex items-center">
+                    <span>[{index + 1}]</span>
+                    <span>[{(result.score * 100).toFixed(2)}%]</span>
                   </div>
-                  <p className='flex wrap truncate opacity-70'>
-                    {result.demand.content}
+                  <p className="opacity-70 min-w-0 wrap-break-word">
+                    {result.demand.content.length > 256
+                      ? `${result.demand.content.slice(0, 256)}…`
+                      : result.demand.content}
                   </p>
-                </div>                  
+                </div>
               )
             })}
           </div>

@@ -41,10 +41,14 @@ function RouteComponent() {
               <div className="flex items-center">
                 <span>[{index + 1}]</span>
                 <span className="opacity-70">
-                  [{new Date(demand.createdAt * 1000).toLocaleDateString()}]
+                  [{new Date(demand.createdAt * 1000).toLocaleDateString('en-GB')}]
                 </span>
               </div>
-              <p className="wrap-break-word min-w-0">{demand.content}</p>
+              <p className="wrap-break-word min-w-0">
+                {demand.content.length > 256
+                  ? `${demand.content.slice(0, 256)}…`
+                  : demand.content}
+              </p>            
             </div>
           ))
         )}

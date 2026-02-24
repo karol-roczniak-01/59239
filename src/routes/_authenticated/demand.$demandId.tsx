@@ -39,7 +39,6 @@ function RouteComponent() {
   const isExpired = currentTime > demand.endingAt
   const secondsLeft = demand.endingAt - currentTime
   const daysLeft = Math.ceil(secondsLeft / 86400)
-  const createdDate = new Date(demand.createdAt * 1000)
 
   const [view, setView] = useState<'details' | 'supply' | 'apply' | 'payment'>('details')
   const [content, setContent] = useState('')
@@ -110,27 +109,27 @@ function RouteComponent() {
         <div className="flex flex-col gap-2">
           <div className="flex">
             <span>
-              [{createdDate.getDate()} {createdDate.toLocaleString('default', { month: 'short' })} {createdDate.getFullYear()}]
+              [{new Date(demand.createdAt * 1000).toLocaleDateString('en-GB')}]
             </span>
             <span>
               {isExpired ? '[expired]' : `[${daysLeft} day${daysLeft !== 1 ? 's' : ''} left]`}
             </span>
           </div>
-          <p className="opacity-70 whitespace-pre-wrap">
+          <p className="opacity-70 wrap-break-word">
             {demand.content}
           </p>
           {hasApplied && (
             <>
               {demand.email && (
-                <div className="flex items-center gap-2">
-                  <span>[email]</span>
-                  <p className="opacity-70">{demand.email}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span>[Email]</span>
+                  <p className="opacity-70 wrap-break-word min-w-0">{demand.email}</p>
                 </div>
               )}
               {demand.phone && (
-                <div className="flex items-center gap-2">
-                  <span>[phone]</span>
-                  <p className="opacity-70">{demand.phone}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span>[Phone]</span>
+                  <p className="opacity-70 wrap-break-word min-w-0">{demand.phone}</p>
                 </div>
               )}
             </>
@@ -146,19 +145,21 @@ function RouteComponent() {
                 <div className="flex items-center">
                   <span>[{index + 1}]</span>
                   <span className="opacity-70">
-                    [{new Date(item.createdAt * 1000).toLocaleDateString()}]
+                    [{new Date(item.createdAt * 1000).toLocaleDateString('en-GB')}]
                   </span>
-                  {item.userId === auth.user?.id && <span>[you]</span>}
+                  <div className="flex gap-2 opacity-70">
+                    <span>[{item.email}]</span>
+                    {item.phone && <span>[{item.phone}]</span>}
+                  </div>
+                  {item.userId === auth.user?.id && <span className='opacity-70'>[you]</span>}
                 </div>
-                <p className="flex wrap truncate opacity-70">{item.content}</p>
-                <div className="flex gap-2">
-                  <span>[{item.email}]</span>
-                  {item.phone && <span>[{item.phone}]</span>}
-                </div>
+                <p className="wrap-break-word min-w-0">
+                  {item.content}
+                </p>
               </div>
             ))
           ) : (
-            <p className="opacity-70">no supply offers yet</p>
+            <p className="opacity-70">No Supply Offers Yet...</p>
           )}
         </div>
       )}
@@ -183,6 +184,7 @@ function RouteComponent() {
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="how you'd fulfill this demand, or leave a note..."
                 rows={6}
+                maxLength={300}
                 className="col-span-4"
                 disabled={isPending || isCreatingIntent}
               />
@@ -222,7 +224,7 @@ function RouteComponent() {
             onClick={handleInitiatePayment}
             disabled={isPending || isCreatingIntent || !trimmedContent || !trimmedEmail || !isValidContent}
           >
-            {isCreatingIntent ? '[preparing...]' : 'continue to payment'}
+            {isCreatingIntent ? '[Preparing...]' : 'Continue to Payment'}
           </Button>
         </div>
       )}
