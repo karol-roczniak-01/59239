@@ -40,7 +40,7 @@ const FormInput: React.FC<FormInputProps> = ({
 }) => {
   return (
     <div className="flex flex-col">
-      <div className={`grid grid-cols-6 gap-2 ${textarea ? 'items-start' : 'items-start'}`}>
+      <div className="grid grid-cols-6 gap-2 items-start">
         <div className="col-span-2 flex flex-col">
           <label className="truncate">[{label}]</label>
           {counter !== undefined && (

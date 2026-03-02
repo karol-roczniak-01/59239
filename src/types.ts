@@ -25,6 +25,8 @@ export interface User {
   fullName: string
   email: string
   verified: boolean
+  bio: string
+  avatar: string
 }
 
 // ===== DEMAND =====

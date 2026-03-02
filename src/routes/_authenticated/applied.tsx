@@ -24,7 +24,7 @@ function RouteComponent() {
   )
 
   return (
-    <Page header={`Your applications (${appliedDemands.length}). Open any to view contact details and move forward`}>
+    <Page header={`Your applications (${appliedDemands.length}). Open any to view contact details and move forward.`}>
       <div className="space-y-4">
         {appliedDemands.length === 0 ? (
           <p className="opacity-70">No applications yet...</p>
@@ -50,6 +50,7 @@ function RouteComponent() {
                   </span>
                   {isExpired && <span className="opacity-70">[expired]</span>}
                 </div>
+                
                 <div className='grid grid-cols-2 gap-2'>
                   <p className="opacity-70 wrap-break-word min-w-0">
                     {item.content.length > 128

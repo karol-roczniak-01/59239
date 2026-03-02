@@ -40,14 +40,14 @@ function RouteComponent() {
 
   if (auth.user) {
     return (
-      <Page header='Welcome to 5-92-39! — AI-powered tender platform connecting suppliers with buyers'>
+      <Page header='Welcome to 5-92-39! — AI-powered tender platform connecting suppliers with buyers.'>
         <Menu options={authorizedOptions}/>
       </Page>
     )
   }
 
   return (
-    <Page header='Welcome to 5-92-39! — AI-powered tender platform connecting suppliers with buyers'>
+    <Page header='Welcome to 5-92-39! — AI-powered tender platform connecting suppliers with buyers.'>
       <Menu options={unauthorizedOptions}/>
     </Page>
   )

@@ -44,7 +44,7 @@ function RouteComponent() {
   })
 
   return (
-    <Page header="Describe the product or service you're looking for — be specific so suppliers can find you">
+    <Page header="Describe the product or service you're looking for — be specific so suppliers can find you.">
       {apiError && <p>{apiError}</p>}
       <form
         onSubmit={(e) => {

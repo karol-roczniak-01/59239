@@ -339,7 +339,7 @@ supply.get('/api/supply/user/:userId/demands', async (c) => {
 })
 
 // ============================================================================
-// DELETE SUPPLY (Authenticated - user can only delete their own)
+// DELETE SUPPLY (Authenticated - user can only delete their own) TODO LATER
 // ============================================================================
 supply.delete('/api/supply/:supplyId', async (c) => {
   try {

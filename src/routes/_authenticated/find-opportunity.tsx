@@ -112,7 +112,7 @@ function RouteComponent() {
   const isLimitReached = currentRateLimit.remaining === 0
 
   return (
-    <Page header='Describe what your company offers — be specific to get better matches (30–500 characters)'>    
+    <Page header='Describe what your company offers — be specific to get better matches (30–500 characters).'>    
       <Textarea
         autoFocus
         placeholder="We are a framing company based in Mazowieckie, handling residential projects from 100 to 300m². Available from March onwards."

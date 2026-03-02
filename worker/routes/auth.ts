@@ -214,7 +214,7 @@ auth.post('/api/users/login', async (c) => {
 // ============================================================================
 // SIGN OUT
 // ============================================================================
-auth.post('/api/users/signout', async (c) => {
+auth.post('/api/users/signout', (c) => {
   try {
     // Clear the httpOnly cookie
     clearAuthCookie(c)

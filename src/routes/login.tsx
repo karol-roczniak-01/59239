@@ -39,7 +39,7 @@ function RouteComponent() {
   })
 
   return (
-    <Page header="Log in to your 19-18-8-103 account">
+    <Page header="Log in to your 19-18-8-103 account.">
       {apiError && <p>{apiError}</p>}
       <form
         onSubmit={(e) => {
