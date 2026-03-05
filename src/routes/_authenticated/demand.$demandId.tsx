@@ -1,18 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
-import { useState } from 'react'
-import { loadStripe } from '@stripe/stripe-js'
-import { Elements } from '@stripe/react-stripe-js'
+import { useState, useEffect } from 'react'
 import { supplyByDemandIdQueryOptions, useCreateSupply } from '@/hooks/useSupply'
 import { Input } from '@/components/Input'
 import { Textarea } from '@/components/Textarea'
 import { Button } from '@/components/Button'
 import Loader from '@/components/Loader'
 import { demandByIdQueryOptions } from '@/hooks/useDemand'
-import { PaymentForm } from '@/components/PaymentForm'
 import Page from '@/components/Page'
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
 
 export const Route = createFileRoute('/_authenticated/demand/$demandId')({
   pendingComponent: () => <Loader />,
@@ -40,66 +35,90 @@ function RouteComponent() {
   const secondsLeft = demand.endingAt - currentTime
   const daysLeft = Math.ceil(secondsLeft / 86400)
 
-  const [view, setView] = useState<'details' | 'supply' | 'apply' | 'payment'>('details')
+  const [view, setView] = useState<'details' | 'supply' | 'apply'>('details')
   const [content, setContent] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
-  const [clientSecret, setClientSecret] = useState<string | null>(null)
-  const [isCreatingIntent, setIsCreatingIntent] = useState(false)
+  const [isRedirecting, setIsRedirecting] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
   const [paymentError, setPaymentError] = useState<string | null>(null)
 
   const trimmedContent = content.trim()
   const trimmedEmail = email.trim()
   const isValidContent = trimmedContent.length >= 30 && trimmedContent.length <= 300
 
-  const { mutate: createSupply, isPending, error } = useCreateSupply()
+  const { mutate: createSupply } = useCreateSupply()
 
-  const handleInitiatePayment = async () => {
-    if (!trimmedContent || !trimmedEmail || !isValidContent || !auth.user?.id) return
+  // Handle Stripe redirect back to this page with ?session_id=cs_xxx
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const sessionId = params.get('session_id')
+    if (!sessionId) return
 
-    setIsCreatingIntent(true)
-    setPaymentError(null)
+    // Clean URL immediately so refresh doesn't re-trigger this
+    window.history.replaceState({}, '', `/demand/${demandId}`)
 
-    try {
-      const response = await fetch('/api/payment/create-intent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ demandId, userId: auth.user.id }),
-      })
-
-      if (!response.ok) throw new Error('Failed to initiate payment')
-
-      const data = await response.json()
-      setClientSecret(data.clientSecret)
-      setView('payment')
-    } catch (err) {
-      setPaymentError(err instanceof Error ? err.message : 'Failed to initiate payment')
-    } finally {
-      setIsCreatingIntent(false)
+    const raw = sessionStorage.getItem('pendingSupply')
+    if (!raw) {
+      setPaymentError('Payment succeeded but supply data was lost. Please contact support.')
+      return
     }
-  }
 
-  const handlePaymentSuccess = (paymentId: string) => {
-    createSupply(
-      {
-        demandId,
-        content: trimmedContent,
-        email: trimmedEmail,
-        phone: phone.trim() || undefined,
-        userId: auth.user!.id,
-        paymentIntentId: paymentId,
-      },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ['demand', 'by-id', demandId, auth.user?.id] })
-          queryClient.invalidateQueries({ queryKey: ['supply', 'by-demand', demandId] })
-          setContent('')
-          setEmail('')
-          setPhone('')
-          setClientSecret(null)
-          setView('details')
-        },
-      },
+    const pending = JSON.parse(raw)
+    setIsProcessing(true)
+
+    const verify = async () => {
+      try {
+        const res = await fetch('/api/payment/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId }),
+        })
+
+        if (!res.ok) throw new Error('Payment verification failed')
+
+        const { paymentIntentId, demandId: verifiedDemandId, userId } = await res.json()
+
+        createSupply(
+          {
+            demandId: verifiedDemandId,
+            content: pending.content,
+            email: pending.email,
+            phone: pending.phone,
+            userId,
+            paymentIntentId,
+          },
+          {
+            onSuccess: () => {
+              sessionStorage.removeItem('pendingSupply')
+              setIsProcessing(false)
+              queryClient.invalidateQueries({ queryKey: ['demand', 'by-id', demandId, auth.user?.id] })
+              queryClient.invalidateQueries({ queryKey: ['supply', 'by-demand', demandId] })
+              setView('details')
+            },
+            onError: () => {
+              
+              setIsProcessing(false)
+              setPaymentError(
+                'Payment succeeded but failed to submit your application. Please contact support with session ID: ' + sessionId
+              )
+            },
+          },
+        )
+      } catch (err) {
+        setIsProcessing(false)
+        setPaymentError(err instanceof Error ? err.message : 'Something went wrong')
+      }
+    }
+
+    verify()
+  }, [])
+
+  if (isProcessing) {
+    return (
+      <Page header={`Demand #${demand.id}`}>
+        <p className="opacity-70">Submitting your application...</p>
+      </Page>
     )
   }
 
@@ -151,7 +170,7 @@ function RouteComponent() {
                     <span>[{item.email}]</span>
                     {item.phone && <span>[{item.phone}]</span>}
                   </div>
-                  {item.userId === auth.user?.id && <span className='opacity-70'>[you]</span>}
+                  {item.userId === auth.user?.id && <span className="opacity-70">[you]</span>}
                 </div>
                 <p className="wrap-break-word min-w-0">
                   {item.content}
@@ -171,7 +190,6 @@ function RouteComponent() {
             <span>$149.00</span>
           </div>
 
-          {/* Note */}
           <div className="flex flex-col">
             <div className="grid grid-cols-6 gap-2 items-start">
               <div className="col-span-2 flex flex-col">
@@ -186,12 +204,11 @@ function RouteComponent() {
                 rows={6}
                 maxLength={300}
                 className="col-span-4"
-                disabled={isPending || isCreatingIntent}
+                disabled={isRedirecting}
               />
             </div>
           </div>
 
-          {/* Email */}
           <div className="grid grid-cols-6 gap-2 items-center">
             <label className="col-span-2 truncate">[Email]</label>
             <Input
@@ -200,11 +217,10 @@ function RouteComponent() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
               className="col-span-4"
-              disabled={isPending || isCreatingIntent}
+              disabled={isRedirecting}
             />
           </div>
 
-          {/* Phone */}
           <div className="grid grid-cols-6 gap-2 items-center">
             <label className="col-span-2 truncate">[Phone]</label>
             <Input
@@ -213,7 +229,7 @@ function RouteComponent() {
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+48 123 456 789 (optional)"
               className="col-span-4"
-              disabled={isPending || isCreatingIntent}
+              disabled={isRedirecting}
             />
           </div>
 
@@ -222,34 +238,15 @@ function RouteComponent() {
           <Button
             className="px-2"
             onClick={handleInitiatePayment}
-            disabled={isPending || isCreatingIntent || !trimmedContent || !trimmedEmail || !isValidContent}
+            disabled={isRedirecting || !trimmedContent || !trimmedEmail || !isValidContent}
           >
-            {isCreatingIntent ? '[Preparing...]' : 'Continue to Payment'}
+            {isRedirecting ? '[Redirecting to payment...]' : 'Continue to Payment →'}
           </Button>
         </div>
       )}
 
-      {view === 'payment' && clientSecret && (
-        <div className="flex flex-col gap-2">
-          <div className="flex gap-2">
-            <span>[payment]</span>
-            <span className="opacity-70">$149.00</span>
-          </div>
-          <Elements stripe={stripePromise} options={{ clientSecret }}>
-            <PaymentForm
-              clientSecret={clientSecret}
-              onSuccess={handlePaymentSuccess}
-              onError={(err) => setPaymentError(err)}
-              disabled={isPending}
-            />
-          </Elements>
-          {paymentError && <p className="text-sm opacity-70">! {paymentError}</p>}
-          {error && (
-            <p className="text-sm opacity-70">
-              {error instanceof Error ? error.message : 'failed to submit supply'}
-            </p>
-          )}
-        </div>
+      {paymentError && view !== 'apply' && (
+        <p className="text-sm opacity-70">! {paymentError}</p>
       )}
 
       <div className="flex gap-2 items-center flex-wrap">
@@ -267,7 +264,7 @@ function RouteComponent() {
         </Button>
         {!hasApplied && !isExpired && (
           <Button
-            className={`px-2 ${(view === 'apply' || view === 'payment') ? 'bg-primary text-background' : ''}`}
+            className={`px-2 ${view === 'apply' ? 'bg-primary text-background' : ''}`}
             onClick={() => setView('apply')}
           >
             Apply
@@ -278,4 +275,36 @@ function RouteComponent() {
       </div>
     </Page>
   )
+
+  async function handleInitiatePayment() {
+    if (!trimmedContent || !trimmedEmail || !isValidContent || !auth.user?.id) return
+
+    setIsRedirecting(true)
+    setPaymentError(null)
+
+    try {
+      sessionStorage.setItem(
+        'pendingSupply',
+        JSON.stringify({
+          content: trimmedContent,
+          email: trimmedEmail,
+          phone: phone.trim() || undefined,
+        }),
+      )
+
+      const response = await fetch('/api/payment/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ demandId, userId: auth.user.id }),
+      })
+
+      if (!response.ok) throw new Error('Failed to initiate payment')
+
+      const { checkoutUrl } = await response.json()
+      window.location.href = checkoutUrl
+    } catch (err) {
+      setPaymentError(err instanceof Error ? err.message : 'Failed to initiate payment')
+      setIsRedirecting(false)
+    }
+  }
 }

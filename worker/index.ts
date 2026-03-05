@@ -18,6 +18,7 @@ export type Env = {
   RATE_LIMIT: KVNamespace
   JWT_SECRET_KEY: string
   STRIPE_SECRET_KEY: string
+  APP_URL: string 
 }
 
 export type Variables = {

@@ -18,17 +18,17 @@ const handleZodError = (error: unknown) => {
 }
 
 // ============================================================================
-// CREATE PAYMENT INTENT
+// CREATE CHECKOUT SESSION
 // ============================================================================
-const createPaymentIntentSchema = z.object({
-  demandId: z.uuid(),
-  userId: z.uuid(),
+const createCheckoutSessionSchema = z.object({
+  demandId: z.string(),
+  userId: z.string(),
 })
 
-payment.post('/api/payment/create-intent', async (c) => {
+payment.post('/api/payment/create-checkout', async (c) => {
   try {
     const body = await c.req.json()
-    const validated = createPaymentIntentSchema.parse(body)
+    const validated = createCheckoutSessionSchema.parse(body)
 
     // Verify demand exists
     const demand = await c.env.DB.prepare('SELECT id FROM demand WHERE id = ?')
@@ -39,33 +39,43 @@ payment.post('/api/payment/create-intent', async (c) => {
       return c.json({ error: 'Demand not found' }, 404)
     }
 
-    // Create Stripe PaymentIntent
-    const response = await fetch('https://api.stripe.com/v1/payment_intents', {
+    // Create Stripe Checkout Session
+    const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${c.env.STRIPE_SECRET_KEY}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        amount: '149000', // $149.00 in cents
-        currency: 'usd',
+        mode: 'payment',
+        'line_items[0][quantity]': '1',
+        'line_items[0][price_data][currency]': 'usd',
+        'line_items[0][price_data][unit_amount]': '14900',
+        'line_items[0][price_data][product_data][name]': 'Qualified Lead Access',
+        'line_items[0][price_data][product_data][tax_code]': 'txcd_10701400',
+        'automatic_tax[enabled]': 'true',
+        'tax_id_collection[enabled]': 'true',
         'metadata[demandId]': validated.demandId,
         'metadata[userId]': validated.userId,
-        'automatic_payment_methods[enabled]': 'true',
+        // 👇 these two lines copy metadata onto the PaymentIntent too
+        'payment_intent_data[metadata][demandId]': validated.demandId,
+        'payment_intent_data[metadata][userId]': validated.userId,
+        success_url: `${c.env.APP_URL}/demand/${validated.demandId}?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${c.env.APP_URL}/demand/${validated.demandId}?cancelled=true`,
       }),
     })
 
     if (!response.ok) {
       const error = await response.json()
-      console.error('[Payment Intent] Stripe error:', error)
-      throw new Error('Failed to create payment intent')
+      console.error('[Checkout Session] Stripe error:', error)
+      throw new Error('Failed to create checkout session')
     }
 
-    const paymentIntent = await response.json()
+    const session = await response.json()
 
     return c.json({
-      clientSecret: paymentIntent.client_secret,
-      paymentIntentId: paymentIntent.id,
+      checkoutUrl: session.url,
+      sessionId: session.id,
     })
   } catch (error) {
     const zodError = handleZodError(error)
@@ -73,8 +83,8 @@ payment.post('/api/payment/create-intent', async (c) => {
       return c.json({ error: zodError.error }, zodError.status)
     }
 
-    console.error('[Create Payment Intent] Error:', error)
-    return c.json({ error: 'Failed to create payment intent' }, 500)
+    console.error('[Create Checkout Session] Error:', error)
+    return c.json({ error: 'Failed to create checkout session' }, 500)
   }
 })
 
@@ -82,7 +92,7 @@ payment.post('/api/payment/create-intent', async (c) => {
 // VERIFY PAYMENT STATUS
 // ============================================================================
 const verifyPaymentSchema = z.object({
-  paymentIntentId: z.string().min(1),
+  sessionId: z.string().min(1),
 })
 
 payment.post('/api/payment/verify', async (c) => {
@@ -90,9 +100,9 @@ payment.post('/api/payment/verify', async (c) => {
     const body = await c.req.json()
     const validated = verifyPaymentSchema.parse(body)
 
-    // Retrieve PaymentIntent from Stripe
+    // Retrieve Checkout Session from Stripe
     const response = await fetch(
-      `https://api.stripe.com/v1/payment_intents/${validated.paymentIntentId}`,
+      `https://api.stripe.com/v1/checkout/sessions/${validated.sessionId}`,
       {
         headers: {
           Authorization: `Bearer ${c.env.STRIPE_SECRET_KEY}`,
@@ -104,12 +114,20 @@ payment.post('/api/payment/verify', async (c) => {
       throw new Error('Failed to verify payment')
     }
 
-    const paymentIntent = await response.json()
+    const session = await response.json()
+
+    // Only return success if actually paid
+    if (session.payment_status !== 'paid') {
+      return c.json({ error: 'Payment not completed' }, 402)
+    }
 
     return c.json({
-      status: paymentIntent.status,
-      demandId: paymentIntent.metadata.demandId,
-      userId: paymentIntent.metadata.userId,
+      status: session.payment_status,         // 'paid' | 'unpaid' | 'no_payment_required'
+      paymentIntentId: session.payment_intent, // still available for your records
+      demandId: session.metadata.demandId,
+      userId: session.metadata.userId,
+      amountSubtotal: session.amount_subtotal, // your $149 in cents
+      amountTotal: session.amount_total,       // $149 + tax in cents
     })
   } catch (error) {
     const zodError = handleZodError(error)
