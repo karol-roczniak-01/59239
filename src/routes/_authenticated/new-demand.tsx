@@ -87,7 +87,7 @@ function RouteComponent() {
           name="email"
           validators={{
             onSubmit: ({ value }) => {
-              if (!value.trim()) return 'Email is required'
+              if (!value) return 'Email is required'
               if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Invalid email format'
               return undefined
             },

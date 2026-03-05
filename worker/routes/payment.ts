@@ -51,6 +51,7 @@ payment.post('/api/payment/create-checkout', async (c) => {
         'line_items[0][quantity]': '1',
         'line_items[0][price_data][currency]': 'usd',
         'line_items[0][price_data][unit_amount]': '14900',
+        'line_items[0][price_data][tax_behavior]': 'inclusive',
         'line_items[0][price_data][product_data][name]': 'Qualified Lead Access',
         'line_items[0][price_data][product_data][tax_code]': 'txcd_10701400',
         'automatic_tax[enabled]': 'true',
