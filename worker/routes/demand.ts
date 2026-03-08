@@ -390,47 +390,37 @@ demand.get('/api/demand/:demandId', async (c) => {
 
     const validatedDemandId = demandIdSchema.parse(demandId)
 
-    const demand = await c.env.DB.prepare(
-      'SELECT id, userId, content, createdAt, endingAt FROM demand WHERE id = ?'
-    )
-      .bind(validatedDemandId)
-      .first<Omit<Demand, 'email' | 'phone'>>()
+    type DemandWithContact = Omit<Demand, 'email' | 'phone'> & {
+      email: string | null
+      phone: string | null
+      hasApplied: number | null
+    }
 
-    if (!demand) {
+    const row = await c.env.DB.prepare(`
+      SELECT 
+        d.id, d.userId, d.content, d.createdAt, d.endingAt,
+        d.email, d.phone,
+        s.id AS hasApplied
+      FROM demand d
+      LEFT JOIN supply s ON s.demandId = d.id AND s.userId = ?
+      WHERE d.id = ?
+    `)
+      .bind(requestingUserId ?? null, validatedDemandId)
+      .first<DemandWithContact>()
+
+    if (!row) {
       return c.json({ error: 'Demand not found' }, 404)
     }
 
     const currentTime = Math.floor(Date.now() / 1000)
-    const isExpired = currentTime > demand.endingAt
+    const hasApplied = !!row.hasApplied
+    const isExpired = currentTime > row.endingAt
+    const contactInfo = hasApplied ? { email: row.email, phone: row.phone } : null
 
-    let hasApplied = false
-    let contactInfo: { email: string; phone: string } | null = null
-
-    if (requestingUserId) {
-      const validatedUserId = userIdSchema.parse(requestingUserId)
-      const userExists = await verifyUserExists(validatedUserId, c.env)
-
-      if (userExists) {
-        const supply = await c.env.DB.prepare(
-          'SELECT id FROM supply WHERE demandId = ? AND userId = ?'
-        )
-          .bind(validatedDemandId, validatedUserId)
-          .first()
-
-        hasApplied = !!supply
-
-        if (hasApplied) {
-          contactInfo = await c.env.DB.prepare(
-            'SELECT email, phone FROM demand WHERE id = ?'
-          )
-            .bind(validatedDemandId)
-            .first<{ email: string; phone: string }>()
-        }
-      }
-    }
+    const { email, phone, hasApplied: _, ...demandData } = row
 
     return c.json({
-      demand: { ...demand, ...contactInfo },
+      demand: { ...demandData, ...contactInfo },
       hasApplied,
       isExpired,
     })
@@ -444,7 +434,6 @@ demand.get('/api/demand/:demandId', async (c) => {
     return c.json({ error: 'Failed to retrieve demand' }, 500)
   }
 })
-
 // ============================================================================
 // GET DEMANDS BY USER ID
 // ============================================================================
@@ -464,7 +453,7 @@ demand.get('/api/demand/user/:userId', async (c) => {
 
     // Query demand by user ID (include expired demands for user's own view)
     const result = await c.env.DB.prepare(
-      'SELECT * FROM demand WHERE userId = ? ORDER BY createdAt DESC',
+      'SELECT id, userId, content, createdAt, endingAt FROM demand WHERE userId = ? ORDER BY createdAt DESC',
     )
       .bind(validatedUserId)
       .all()

@@ -10,6 +10,9 @@
   "assets": {
     "not_found_handling": "single-page-application",
   },
+  "triggers": {
+    "crons": ["0 0 * * 0"] // We clean old demands and vectorize once a week (sunday midnight)
+  },
   "vars": {
     "VITE_STRIPE_PUBLISHABLE_KEY": "pk_live_51RDhtq2K3ab6NXXzSsjWBkucOYajmCpXacjwW9Kyqz1IblQTqTZZyCcZfI5oD16WlbfuM9h6BXIOF8IXtCDqgcbm00gFfMmN0u",
     "APP_URL": "https://59239.19188103.com",

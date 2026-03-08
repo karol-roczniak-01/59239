@@ -199,10 +199,14 @@ supply.get('/api/supply/demand/:demandId', async (c) => {
 
     // Query supplies by demand ID
     const result = await c.env.DB.prepare(
-      'SELECT * FROM supply WHERE demandId = ? ORDER BY createdAt DESC',
+      'SELECT id, demandId, userId, content, email, phone, createdAt FROM supply WHERE demandId = ? ORDER BY createdAt DESC',
     )
       .bind(validatedDemandId)
       .all()
+
+    if (result.results.length === 0) {
+      return c.json({ supply: [], count: 0 })
+    }
 
     return c.json({
       supply: result.results as Array<Supply>,
@@ -310,7 +314,7 @@ supply.get('/api/supply/user/:userId/demands', async (c) => {
     const result = await c.env.DB.prepare(
       `
         SELECT 
-          d.*,
+          d.id, d.content, d.endingAt,
           s.id as supplyId,
           s.content as supplyContent,
           s.createdAt as appliedAt

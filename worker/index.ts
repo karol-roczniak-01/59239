@@ -7,8 +7,10 @@ import type {
   Ai,
   D1Database,
   KVNamespace,
+  ScheduledEvent,
   VectorizeIndex
 } from '@cloudflare/workers-types';
+import { cleanup } from './scheduled/cleanup'
 
 export type Env = {
   MOTHER_DB: D1Database
@@ -36,4 +38,10 @@ app.route('/', demand)
 app.route('/', supply)
 app.route('/', payment)
 
-export default app
+export default {
+  fetch: app.fetch,
+
+  async scheduled(_event: ScheduledEvent, env: Env) {
+    await cleanup(env)
+  }
+}
