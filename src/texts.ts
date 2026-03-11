@@ -82,6 +82,8 @@ export const texts = {
     leftToday: '',
     leftTodaySub: 'left today',
     continueToPayment: 'Continue to Payment',
+    all: 'all',
+    menu: 'menu',
   },
   pl: {
     // --- Nawigacja i akcje ---
@@ -159,6 +161,8 @@ export const texts = {
     leftToday: 'pozostało',
     leftTodaySub: '',
     continueToPayment: 'Przejdź do płatności',
+    all: 'wszystko',
+    menu: 'menu',
   }
 } satisfies Record<Language, Record<string, string>>
 

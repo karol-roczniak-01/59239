@@ -2,6 +2,7 @@ import { Link, useLocation, useRouter } from "@tanstack/react-router";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import type { ReactNode } from "react";
+import { useLanguage } from "@/providers/language-provider";
 
 interface LayoutProps {
   children: ReactNode
@@ -10,6 +11,7 @@ interface LayoutProps {
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const { t } = useLanguage()
   const { pathname } = useLocation();
   const router = useRouter();
 
@@ -50,11 +52,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="flex">
           <button onClick={() => router.history.back()}>[&lt;--]</button>
         </div>
-        <div className="flex justify-center">
-          <a href="https://19188103.com">[apps]</a>
+        <div className="flex justify-start">
+          <a className="truncate" href="https://19188103.com">[{t('all')}]</a>
         </div>
-        <div className="flex justify-center">
-          <Link to="/">[home]</Link>
+        <div className="flex justify-end">
+          <Link className="truncate" to="/">[{t('menu')}]</Link>
         </div>
         <div className="flex justify-end">
           <button onClick={() => router.history.forward()}>[--&gt;]</button>
