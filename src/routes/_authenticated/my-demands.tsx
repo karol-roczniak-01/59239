@@ -3,6 +3,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { demandByUserIdQueryOptions } from '@/hooks/useDemand'
 import Loader from '@/components/Loader'
 import Page from '@/components/Page'
+import { useLanguage } from '@/providers/language-provider'
 
 export const Route = createFileRoute('/_authenticated/my-demands')({
   pendingComponent: () => <Loader />,
@@ -14,6 +15,7 @@ export const Route = createFileRoute('/_authenticated/my-demands')({
 })
 
 function RouteComponent() {
+  const { t } = useLanguage()
   const { auth } = Route.useRouteContext()
   const navigate = useNavigate()
 
@@ -22,10 +24,10 @@ function RouteComponent() {
   )
 
   return (
-    <Page header={`Your posted demands (${demands.length}). Open one to check if anyone applied.`}>
+    <Page header={`${t('myDemandsWelcome')} (${demands.length}). ${t('myDemandsWelcomeSub')}`}>
       <div className="space-y-4">
         {demands.length === 0 ? (
-          <p className="opacity-70">No demands yet...</p>
+          <p className="opacity-70">{t('noDemandsYet')}</p>
         ) : (
           demands.map((demand, index) => (
             <div

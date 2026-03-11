@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 import { rateLimitStatusQueryOptions, searchDemandQueryOptions } from '@/hooks/useDemand'
 import { Textarea } from '@/components/Textarea'
 import { Button } from '@/components/Button'
+import { useLanguage } from '@/providers/language-provider'
 
 const searchSchema = z.object({
   q: z.string().optional().default(''),
@@ -15,13 +16,14 @@ const searchSchema = z.object({
 
 const STORAGE_KEY = 'supplySearchQuery'
 
-export const Route = createFileRoute('/_authenticated/find-opportunity')({
+export const Route = createFileRoute('/_authenticated/find-match')({
   pendingComponent: () => <Loader />,
   validateSearch: searchSchema,
   component: RouteComponent,
 })
 
 function RouteComponent() {
+  const { t } = useLanguage()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { q: urlSearchQuery } = Route.useSearch()
@@ -112,10 +114,10 @@ function RouteComponent() {
   const isLimitReached = currentRateLimit.remaining === 0
 
   return (
-    <Page header='Describe what your company offers — be specific to get better matches (30–500 characters).'>    
+    <Page header={t('findMatchWelcome')}>    
       <Textarea
         autoFocus
-        placeholder="We are a framing company based in Mazowieckie, handling residential projects from 100 to 300m². Available from March onwards."
+        placeholder={t('findMatchQuery')}
         value={searchInput}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
@@ -128,16 +130,16 @@ function RouteComponent() {
         className="w-full shrink-0"
       >
         {isLoading || isFetching
-          ? 'Searching...'
+          ? t('searching')
           : isLimitReached
-            ? 'Daily limit reached'
-            : `Search — ${currentRateLimit.remaining} left today`}
+            ? t('dailyLimitReached')
+            : `${t('search')} — ${t('leftToday')} ${currentRateLimit.remaining} ${t('leftTodaySub')}`}
       </Button>
 
       <div className=''>
         {(isLoading || isFetching) && urlSearchQuery.length >= 30 ? (
           <div className="h-full w-full flex items-center justify-center">
-            <p>Wait...</p>
+            <p>{t('wait')}</p>
           </div>
         ) : rateLimitError ? (
           <p className="text-primary/70">{rateLimitError}</p>
@@ -166,7 +168,7 @@ function RouteComponent() {
             })}
           </div>
         ) : (
-          <p>No matching demands found</p>
+          <p>{t('noDemandsFound')}</p>
         )}
       </div>
     </Page>

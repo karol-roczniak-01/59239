@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import Menu from '@/components/Menu'
 import Loader from '@/components/Loader'
 import Page from '@/components/Page'
+import { useLanguage } from '@/providers/language-provider'
 
 export const Route = createFileRoute('/')({
   pendingComponent: () => <Loader />,
@@ -9,6 +10,7 @@ export const Route = createFileRoute('/')({
 })
 
 function RouteComponent() {
+  const { t } = useLanguage()
   const { auth } = Route.useRouteContext()
   const navigate = useNavigate()
 
@@ -22,16 +24,16 @@ function RouteComponent() {
   }
 
   const authorizedOptions = [
-    { label: 'New Demand', onSelect: () => navigate({ to: '/new-demand' }) },
-    { label: 'My Demands', onSelect: () => navigate({ to: '/my-demands' }) },
-    { label: 'Find Opportunity', onSelect: () => navigate({ to: '/find-opportunity' }) },
-    { label: 'Applied', onSelect: () => navigate({ to: '/applied' }) },
-    { label: 'Log Out', onSelect: handleLogout },
+    { label: t('newDemand'), onSelect: () => navigate({ to: '/new-demand' }) },
+    { label: t('myDemands'), onSelect: () => navigate({ to: '/my-demands' }) },
+    { label: t('findMatch'), onSelect: () => navigate({ to: '/find-match' }) },
+    { label: t('applied'), onSelect: () => navigate({ to: '/applied' }) },
+    { label: t('logOut'), onSelect: handleLogout },
   ]
 
   const unauthorizedOptions = [
-    { label: 'Log In', onSelect: () => navigate({ to: '/login' })},
-    { label: 'Join', onSelect: handleJoin },
+    { label: t('logIn'), onSelect: () => navigate({ to: '/login' })},
+    { label: t('createAccount'), onSelect: handleJoin },
   ]
 
   if (auth.isLoading) {
@@ -40,14 +42,14 @@ function RouteComponent() {
 
   if (auth.user) {
     return (
-      <Page header='Welcome to 5-92-39! — AI-powered tender platform connecting suppliers with buyers.'>
+      <Page header={t('indexWelcome')}>
         <Menu options={authorizedOptions}/>
       </Page>
     )
   }
 
   return (
-    <Page header='Welcome to 5-92-39! — AI-powered tender platform connecting suppliers with buyers.'>
+    <Page header={t('indexWelcome')}>
       <Menu options={unauthorizedOptions}/>
     </Page>
   )

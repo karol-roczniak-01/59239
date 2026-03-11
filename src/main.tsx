@@ -6,6 +6,7 @@ import { routeTree } from './routeTree.gen'
 import './styles.css'
 import reportWebVitals from './reportWebVitals.ts'
 import { AuthProvider, useAuth } from './routes/-auth.tsx'
+import { LanguageProvider } from './providers/language-provider.tsx'
 
 const TanStackQueryProviderContext = TanStackQueryProvider.getContext()
 const router = createRouter({
@@ -32,7 +33,9 @@ if (rootElement && !rootElement.innerHTML) {
     <StrictMode>
       <TanStackQueryProvider.Provider {...TanStackQueryProviderContext}>
         <AuthProvider>
-          <InnerApp />
+          <LanguageProvider>
+            <InnerApp />
+          </LanguageProvider>
         </AuthProvider>
       </TanStackQueryProvider.Provider>
     </StrictMode>,

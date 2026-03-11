@@ -254,7 +254,7 @@ demand.get('/api/demand/search/limit', async (c) => {
     }
 
     // Get rate limit status
-    const status = await getRateLimitStatus(validatedUserId, c.env.RATE_LIMIT)
+    const status = await getRateLimitStatus(validatedUserId, c.env.KV)
 
     return c.json(status)
   } catch (error) {
@@ -296,7 +296,7 @@ demand.get('/api/demand/search', async (c) => {
     // Check and increment rate limit
     const rateLimit = await checkAndIncrementRateLimit(
       validatedUserId,
-      c.env.RATE_LIMIT,
+      c.env.KV,
     )
 
     if (!rateLimit.allowed) {

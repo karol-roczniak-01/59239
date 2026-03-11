@@ -18,6 +18,42 @@ const handleZodError = (error: unknown) => {
 }
 
 // ============================================================================
+// PRICING MAP
+// Fixed rates — update periodically to stay roughly ~$149 equivalent
+// ============================================================================
+const PRICING: Record<string, { currency: string; amount: number; locale: string }> = {
+  PL: { currency: 'pln', amount: 49900, locale: 'pl-PL' }, // ~499 PLN
+  GB: { currency: 'gbp', amount: 11900, locale: 'en-GB' }, // ~£119
+  DE: { currency: 'eur', amount: 13900, locale: 'de-DE' }, // ~€139
+  FR: { currency: 'eur', amount: 13900, locale: 'fr-FR' }, // ~€139
+}
+
+const DEFAULT_PRICE = { currency: 'usd', amount: 14900 }
+
+const getPrice = (country: string) => PRICING[country] ?? null
+
+type CfRequest = Request & { cf?: { country?: string } }
+
+// ============================================================================
+// PRICE DISPLAY
+// ============================================================================
+payment.get('/api/payment/price', (c) => {
+  const cf = (c.req.raw as CfRequest).cf
+  const country = cf?.country ?? 'US'
+
+  const price = getPrice(country)
+  if (!price) return c.json({ display: '$149', note: '', country })
+
+  const display = new Intl.NumberFormat(price.locale, {
+    style: 'currency',
+    currency: price.currency.toUpperCase(),
+    maximumFractionDigits: 0,
+  }).format(price.amount / 100)
+
+  return c.json({ display, note: '~$149', country })
+})
+
+// ============================================================================
 // CREATE CHECKOUT SESSION
 // ============================================================================
 const createCheckoutSessionSchema = z.object({
@@ -30,6 +66,10 @@ payment.post('/api/payment/create-checkout', async (c) => {
     const body = await c.req.json()
     const validated = createCheckoutSessionSchema.parse(body)
 
+    const cf = (c.req.raw as CfRequest).cf
+    const country = cf?.country ?? 'US'
+    const price = getPrice(country) ?? DEFAULT_PRICE
+
     // Verify demand exists
     const demand = await c.env.DB.prepare('SELECT id FROM demand WHERE id = ?')
       .bind(validated.demandId)
@@ -39,7 +79,6 @@ payment.post('/api/payment/create-checkout', async (c) => {
       return c.json({ error: 'Demand not found' }, 404)
     }
 
-    // Create Stripe Checkout Session
     const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
       headers: {
@@ -49,8 +88,8 @@ payment.post('/api/payment/create-checkout', async (c) => {
       body: new URLSearchParams({
         mode: 'payment',
         'line_items[0][quantity]': '1',
-        'line_items[0][price_data][currency]': 'usd',
-        'line_items[0][price_data][unit_amount]': '14900',
+        'line_items[0][price_data][currency]': price.currency,
+        'line_items[0][price_data][unit_amount]': price.amount.toString(),
         'line_items[0][price_data][tax_behavior]': 'inclusive',
         'line_items[0][price_data][product_data][name]': 'Qualified Lead Access',
         'line_items[0][price_data][product_data][tax_code]': 'txcd_10701400',
@@ -72,15 +111,10 @@ payment.post('/api/payment/create-checkout', async (c) => {
 
     const session = await response.json()
 
-    return c.json({
-      checkoutUrl: session.url,
-      sessionId: session.id,
-    })
+    return c.json({ checkoutUrl: session.url, sessionId: session.id })
   } catch (error) {
     const zodError = handleZodError(error)
-    if (zodError) {
-      return c.json({ error: zodError.error }, zodError.status)
-    }
+    if (zodError) return c.json({ error: zodError.error }, zodError.status)
 
     console.error('[Create Checkout Session] Error:', error)
     return c.json({ error: 'Failed to create checkout session' }, 500)
@@ -99,40 +133,30 @@ payment.post('/api/payment/verify', async (c) => {
     const body = await c.req.json()
     const validated = verifyPaymentSchema.parse(body)
 
-    // Retrieve Checkout Session from Stripe
     const response = await fetch(
       `https://api.stripe.com/v1/checkout/sessions/${validated.sessionId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${c.env.STRIPE_SECRET_KEY}`,
-        },
-      },
+      { headers: { Authorization: `Bearer ${c.env.STRIPE_SECRET_KEY}` } },
     )
 
-    if (!response.ok) {
-      throw new Error('Failed to verify payment')
-    }
+    if (!response.ok) throw new Error('Failed to verify payment')
 
     const session = await response.json()
 
-    // Only return success if actually paid
     if (session.payment_status !== 'paid') {
       return c.json({ error: 'Payment not completed' }, 402)
     }
 
     return c.json({
-      status: session.payment_status,         // 'paid' | 'unpaid' | 'no_payment_required'
-      paymentIntentId: session.payment_intent, // still available for your records
+      status: session.payment_status,
+      paymentIntentId: session.payment_intent,
       demandId: session.metadata.demandId,
       userId: session.metadata.userId,
-      amountSubtotal: session.amount_subtotal, // your $149 in cents
-      amountTotal: session.amount_total,       // $149 + tax in cents
+      amountSubtotal: session.amount_subtotal,
+      amountTotal: session.amount_total,
     })
   } catch (error) {
     const zodError = handleZodError(error)
-    if (zodError) {
-      return c.json({ error: zodError.error }, zodError.status)
-    }
+    if (zodError) return c.json({ error: zodError.error }, zodError.status)
 
     console.error('[Verify Payment] Error:', error)
     return c.json({ error: 'Failed to verify payment' }, 500)

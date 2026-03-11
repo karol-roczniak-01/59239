@@ -5,12 +5,14 @@ import { useCreateDemand } from '@/hooks/useDemand'
 import Page from '@/components/Page'
 import { useState } from 'react'
 import FormInput from '@/components/FormInput'
+import { useLanguage } from '@/providers/language-provider'
 
 export const Route = createFileRoute('/_authenticated/new-demand')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
+  const { t } = useLanguage()
   const { auth } = Route.useRouteContext()
   const navigate = useNavigate()
   const { mutate: createDemand, isPending } = useCreateDemand()
@@ -21,7 +23,7 @@ function RouteComponent() {
       content: '',
       email: '',
       phone: '',
-      days: '30',
+      days: '',
     },
     onSubmit: async ({ value }) => {
       const daysNum = parseInt(value.days) || 0
@@ -44,7 +46,7 @@ function RouteComponent() {
   })
 
   return (
-    <Page header="Describe the product or service you're looking for — be specific so suppliers can find you.">
+    <Page header={t('newDemandWelcome')}>
       {apiError && <p>{apiError}</p>}
       <form
         onSubmit={(e) => {
@@ -61,9 +63,9 @@ function RouteComponent() {
           validators={{
             onSubmit: ({ value }) => {
               const trimmed = value.trim()
-              if (!trimmed) return 'Description is required'
-              if (trimmed.length < 50) return 'Minimum 50 characters'
-              if (trimmed.length > 1000) return 'Maximum 1000 characters'
+              if (!trimmed) return t('demandContentRequired')
+              if (trimmed.length < 50) return t('demandContentMin')
+              if (trimmed.length > 1000) return t('demandContentMax')
               return undefined
             },
           }}
@@ -71,12 +73,12 @@ function RouteComponent() {
           {(field) => (
             <FormInput
               field={field}
-              label="Description"
+              label={t('demandContentLabel')}
               textarea
               rows={5}
               counter={1000}
               hint="min 50"
-              placeholder="I’m building a family home 40 km from Warsaw and need a framing crew for a 180m² single-story house. Work to start in April, budget around 40 000 PLN."
+              placeholder={t('demandContentPlaceholder')}
               disabled={isPending}
             />
           )}
@@ -87,8 +89,8 @@ function RouteComponent() {
           name="email"
           validators={{
             onSubmit: ({ value }) => {
-              if (!value) return 'Email is required'
-              if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Invalid email format'
+              if (!value) return t('emailRequired')
+              if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return t('emailValidation')
               return undefined
             },
           }}
@@ -96,10 +98,10 @@ function RouteComponent() {
           {(field) => (
             <FormInput
               field={field}
-              label="Email"
+              label={t('emailLabel')}
               type="email"
               autoComplete="email"
-              placeholder="your@email.com"
+              placeholder={t('emailPlaceholder')}
               disabled={isPending}
             />
           )}
@@ -112,9 +114,9 @@ function RouteComponent() {
           {(field) => (
             <FormInput
               field={field}
-              label="Phone"
+              label={t('phoneLabel')}
               type="tel"
-              placeholder="+48 123 456 789 (optional)"
+              placeholder={t('phonePlaceholder')}
               disabled={isPending}
             />
           )}
@@ -126,7 +128,7 @@ function RouteComponent() {
           validators={{
             onSubmit: ({ value }) => {
               const n = parseInt(value)
-              if (isNaN(n) || n < 7 || n > 180) return 'Enter between 7 and 180 days'
+              if (isNaN(n) || n < 7 || n > 180) return t('daysValidation')
               return undefined
             },
           }}
@@ -134,11 +136,11 @@ function RouteComponent() {
           {(field) => (
             <FormInput
               field={field}
-              label="Days"
+              label={t('days')}
               type="number"
               placeholder="30"
               hint="max 180"
-              suffix="days"
+              suffix=""
               min="7"
               max="180"
               className="w-10"
@@ -149,12 +151,12 @@ function RouteComponent() {
 
         <form.Subscribe selector={(state) => state.isSubmitting}>
           {(isSubmitting) => (
-            <Button type="submit" disabled={isSubmitting || isPending || apiError === 'Active demand limit reached (50)'} className="w-full">
+            <Button type="submit" disabled={isSubmitting || isPending || apiError === t('activeDemandLimitReached')} className="w-full">
               {isSubmitting || isPending
                 ? 'Creating...'
-                : apiError === 'Active demand limit reached (50)'
+                : apiError === t('activeDemandLimitReached')
                   ? 'Limit of 50 demands reached'
-                  : 'Create'}
+                  : t('create')}
             </Button>
           )}
         </form.Subscribe>

@@ -17,7 +17,7 @@ export type Env = {
   DB: D1Database
   AI: Ai
   VECTORIZE: VectorizeIndex
-  RATE_LIMIT: KVNamespace
+  KV: KVNamespace
   JWT_SECRET_KEY: string
   STRIPE_SECRET_KEY: string
   APP_URL: string 

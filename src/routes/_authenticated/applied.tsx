@@ -3,6 +3,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { demandsUserAppliedToQueryOptions } from '@/hooks/useSupply'
 import Loader from '@/components/Loader'
 import Page from '@/components/Page'
+import { useLanguage } from '@/providers/language-provider'
 
 export const Route = createFileRoute('/_authenticated/applied')({
   pendingComponent: () => <Loader />,
@@ -16,6 +17,7 @@ export const Route = createFileRoute('/_authenticated/applied')({
 })
 
 function RouteComponent() {
+  const { t } = useLanguage()
   const { auth } = Route.useRouteContext()
   const navigate = useNavigate()
 
@@ -24,10 +26,10 @@ function RouteComponent() {
   )
 
   return (
-    <Page header={`Your applications (${appliedDemands.length}). Open any to view contact details and move forward.`}>
+    <Page header={`${t('appliedWelcome')} (${appliedDemands.length}). ${t('appliedWelcomeSub')}`}>
       <div className="space-y-4">
         {appliedDemands.length === 0 ? (
-          <p className="opacity-70">No applications yet...</p>
+          <p className="opacity-70">{t('noApplicationsYet')}</p>
         ) : (
           appliedDemands.map((item, index) => {
             const isExpired = Date.now() / 1000 > item.endingAt
@@ -48,7 +50,7 @@ function RouteComponent() {
                   <span className="opacity-70">
                     [{new Date(item.appliedAt * 1000).toLocaleDateString()}]
                   </span>
-                  {isExpired && <span className="opacity-70">[expired]</span>}
+                  {isExpired && <span className="opacity-70">[{t('expired')}]</span>}
                 </div>
                 
                 <div className='grid grid-cols-2 gap-8'>

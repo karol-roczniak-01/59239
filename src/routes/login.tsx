@@ -7,6 +7,7 @@ import Loader from '@/components/Loader'
 import useMobile from '@/hooks/useMobile'
 import Page from '@/components/Page'
 import FormInput from '@/components/FormInput'
+import { useLanguage } from '@/providers/language-provider'
 
 export const Route = createFileRoute('/login')({
   pendingComponent: () => <Loader />,
@@ -19,6 +20,7 @@ export const Route = createFileRoute('/login')({
 })
 
 function RouteComponent() {
+  const { t } = useLanguage()
   const { login } = useAuth()
   const isMobile = useMobile()
   const [apiError, setApiError] = useState<string>('')
@@ -39,7 +41,7 @@ function RouteComponent() {
   })
 
   return (
-    <Page header="Log in to your 19-18-8-103 account.">
+    <Page header={t('loginWelcome')}>
       {apiError && <p>{apiError}</p>}
       <form
         onSubmit={(e) => {
@@ -53,8 +55,8 @@ function RouteComponent() {
           name="email"
           validators={{
             onSubmit: ({ value }) => {
-              if (!value) return 'Email is required'
-              if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Invalid email format'
+              if (!value) return t('emailRequired')
+              if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return t('emailValidation')
               return undefined
             },
           }}
@@ -62,10 +64,10 @@ function RouteComponent() {
           {(field) => (
             <FormInput
               field={field}
-              label="Email"
+              label={t('emailLabel')}
               type="email"
               autoComplete="email"
-              placeholder="email@example.com"
+              placeholder={t('emailPlaceholder')}
               autoFocus={!isMobile}
             />
           )}
@@ -74,13 +76,13 @@ function RouteComponent() {
         <form.Field
           name="password"
           validators={{
-            onSubmit: ({ value }) => (!value ? 'Password is required' : undefined),
+            onSubmit: ({ value }) => (!value ? t('passwordRequired') : undefined),
           }}
         >
           {(field) => (
             <FormInput
               field={field}
-              label="Password"
+              label={t('passwordLabel')}
               type="password"
               autoComplete="current-password"
               placeholder="••••••••"
@@ -92,7 +94,7 @@ function RouteComponent() {
           <form.Subscribe selector={(state) => state.isSubmitting}>
             {(isSubmitting) => (
               <Button type="submit" disabled={isSubmitting} className="w-full">
-                {isSubmitting ? 'Logging In...' : 'Log In'}
+                {isSubmitting ? t('loggingIn') : t('logIn')}
               </Button>
             )}
           </form.Subscribe>
