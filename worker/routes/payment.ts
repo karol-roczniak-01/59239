@@ -95,9 +95,16 @@ payment.post('/api/payment/create-checkout', async (c) => {
         'line_items[0][price_data][product_data][tax_code]': 'txcd_10701400',
         'automatic_tax[enabled]': 'true',
         'tax_id_collection[enabled]': 'true',
-        'payment_intent_data[metadata][demandId]': validated.demandId,
-        'payment_intent_data[metadata][userId]': validated.userId,
-        'payment_intent_data[metadata][type]': '5-92-39-lead-access',
+        'billing_address_collection': 'required',
+        'customer_creation': 'always',
+        // Session-level metadata (readable directly from session object)
+        'metadata[demandId]': validated.demandId,
+        'metadata[userId]': validated.userId,
+        'metadata[type]': '5-92-39-lead-access',
+        // Invoice creation
+        'invoice_creation[enabled]': 'true',
+        'invoice_creation[invoice_data][metadata][demandId]': validated.demandId,
+        'invoice_creation[invoice_data][metadata][userId]': validated.userId,
         success_url: `${c.env.APP_URL}/demand/${validated.demandId}?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${c.env.APP_URL}/demand/${validated.demandId}?cancelled=true`,
       }),
@@ -149,6 +156,7 @@ payment.post('/api/payment/verify', async (c) => {
     return c.json({
       status: session.payment_status,
       paymentIntentId: session.payment_intent,
+      // Now correctly reading from session.metadata (not payment_intent metadata)
       demandId: session.metadata.demandId,
       userId: session.metadata.userId,
       amountSubtotal: session.amount_subtotal,
